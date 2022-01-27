@@ -1,0 +1,3 @@
+export ACI_CLIENT_ID=
+export ACI_SECRET=
+export ACI_DC_URL=https://eu2-cloud.acronis.com
