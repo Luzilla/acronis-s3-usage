@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Got tenant id: %s\n", tenantId)
+	fmt.Printf("Got tenant id: %s\n\n", tenantId)
 
 	usageData, err := aci.GetUsage(tenantId)
 	if err != nil {
@@ -26,22 +26,22 @@ func main() {
 	}
 
 	for _, items := range usageData.Items {
-		//fmt.Printf("Got tenant ID: %s\n", items.Tenant)
 		for _, usages := range items.Usages {
-			if usages["name"] != "hci_s3_storage" {
+			if usages.Name != "hci_s3_storage" {
 				continue
 			}
 
-			app, err := aci.GetApplication(usages["application_id"].(string))
+			app, err := aci.GetApplication(usages.ApplicationID)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("%s (Type: %s)\n\n%s -- %.2f GB\n",
+
+			fmt.Printf("%s (Type: %s)\n%s -- %.2f GB\n\n",
 				app.Name,
 				app.Type,
-				usages["name"],
+				usages.Name,
 				// bitshift -> byte to gb
-				(usages["absolute_value"].(float64) / (1 << 30)))
+				(usages.AbsoluteValue / (1 << 30)))
 		}
 	}
 }
