@@ -9,11 +9,17 @@ import (
 )
 
 type AcronisClient struct {
-	ClientID string
-	Secret   string
-	DCurl    string
-	token    tokenResponse
-	http     *resty.Client
+	clientID string
+	secret   string
+
+	// data center URL
+	dcURL string
+
+	// token
+	token tokenResponse
+
+	// http client
+	http *resty.Client
 }
 
 func NewClient(clientID string, secret string, dcURL string) *AcronisClient {
@@ -22,9 +28,9 @@ func NewClient(clientID string, secret string, dcURL string) *AcronisClient {
 	http.SetHeader("Accept", "application/json")
 
 	return &AcronisClient{
-		ClientID: clientID,
-		Secret:   secret,
-		DCurl:    dcURL,
+		clientID: clientID,
+		secret:   secret,
+		dcURL:    dcURL,
 		http:     http,
 	}
 }
@@ -68,6 +74,7 @@ func (c *AcronisClient) GetUsage(tenantId string) (UsageResponse, error) {
 		SetQueryParams(map[string]string{"tenants": tenantId}).
 		SetResult(&data).
 		Get("/tenants/usages")
+
 	if err != nil {
 		return UsageResponse{}, err
 	}
@@ -80,8 +87,8 @@ func (c *AcronisClient) GetUsage(tenantId string) (UsageResponse, error) {
 
 func (c *AcronisClient) encodeClientCredentials() string {
 	authStr := fmt.Sprintf("%s:%s",
-		c.ClientID,
-		c.Secret,
+		c.clientID,
+		c.secret,
 	)
 	return base64.StdEncoding.EncodeToString([]byte(authStr))
 }
@@ -115,6 +122,6 @@ func (c *AcronisClient) fetchToken() {
 
 	c.token = tokenData
 
-	fmt.Printf("Got a token: %s***\n", c.token.AccessToken[0:8])
+	fmt.Printf("Got a token: %s***\n", c.token.AccessToken[0:5])
 	c.http.SetHeader("Authorization", c.buildBearer())
 }
