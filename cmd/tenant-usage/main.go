@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 
+	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/acronis"
 )
 
@@ -36,12 +38,12 @@ func main() {
 				panic(err)
 			}
 
-			fmt.Printf("%s (Type: %s)\n%s -- %.2f GB\n\n",
+			fmt.Printf("%s (Type: %s)\n%s -- %s\n\n",
 				app.Name,
 				app.Type,
 				usages.Name,
-				// bitshift -> byte to gb
-				(usages.AbsoluteValue / (1 << 30)))
+				utils.PrettyByteSize(int(math.Round(usages.AbsoluteValue))),
+			)
 		}
 	}
 }
