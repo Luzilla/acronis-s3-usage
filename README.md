@@ -20,3 +20,27 @@ hci_s3_storage -- 4619.61 GB
 
 ## extract usage for buckets (ACI &amp; VHI)
 
+```sh
+❯ go run ./cmd/ostor/main.go --help
+NAME:
+   a program to interact with the s3 management APIs in ACI and VHI - A new cli application
+
+USAGE:
+   a program to interact with the s3 management APIs in ACI and VHI [global options] command [command options] 
+
+VERSION:
+   dev (none, date: unknown)
+
+COMMANDS:
+   buckets, b  list buckets
+   stats, s    list stats
+   users, u    list users
+   help, h     Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --s3-endpoint value        [$S3_ENDPOINT]
+   --s3-system-key-id value   [$S3_SYSTEM_KEY_ID]
+   --s3-system-secret value   [$S3_SYSTEM_SECRET_KEY]
+   --help, -h                show help
+   --version, -v             print the version
+```
