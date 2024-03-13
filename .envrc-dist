@@ -1,7 +1,7 @@
 # for tenant-usage
 export ACI_CLIENT_ID=
 export ACI_SECRET=
-export ACI_DC_URL=https://eu2-cloud.acronis.com
+# export ACI_DC_URL=
 
 # for bucket-usage (system user)
 export S3_ENDPOINT=
