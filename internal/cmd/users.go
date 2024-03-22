@@ -28,6 +28,20 @@ func Users(cCtx *cli.Context) error {
 	return nil
 }
 
+func CreateUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+
+	err := client.CreateUser(email)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("success")
+	return nil
+}
+
 func ShowUser(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 

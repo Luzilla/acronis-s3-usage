@@ -1,9 +1,19 @@
 package ostor
 
-import "github.com/go-resty/resty/v2"
+import (
+	"fmt"
+	"io"
+
+	"github.com/go-resty/resty/v2"
+)
 
 // query parameter for user management
 const qUsers string = "ostor-users"
+
+func (o *Ostor) CreateUser(email string) error {
+	_, err := o.putRequest(qUsers, qUsers+"&emailAddress="+email)
+	return err
+}
 
 func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
 	var users *OstorUsersListResponse
@@ -13,7 +23,10 @@ func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
 
 func (o *Ostor) GetUser(email string) (*OstorUser, error) {
 	var user *OstorUser
-	_, err := o.getRequest(qUsers, qUsers+"&emailAddress="+email, &user)
+	resp, err := o.getRequest(qUsers, qUsers+"&emailAddress="+email, &user)
+
+	b, _ := io.ReadAll(resp.RawResponse.Body)
+	fmt.Printf("show: %s", b)
 	return user, err
 }
 

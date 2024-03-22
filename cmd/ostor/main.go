@@ -67,9 +67,19 @@ func main() {
 			{
 				Name:    "users",
 				Aliases: []string{"u"},
-				Usage:   "list users",
+				Usage:   "manage users",
 				Action:  cmd.Users,
 				Subcommands: []*cli.Command{
+					{
+						Name: "create",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "email",
+								Required: true,
+							},
+						},
+						Action: cmd.CreateUser,
+					},
 					{
 						Name: "show",
 						Flags: []cli.Flag{

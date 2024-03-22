@@ -81,3 +81,16 @@ func (o *Ostor) postRequest(cmd, query string) (*resty.Response, error) {
 
 	return o.client.R().Post("/?" + query)
 }
+
+func (o *Ostor) putRequest(cmd, query string) (*resty.Response, error) {
+	signature, date, err := createSignature("PUT", o.secretKeyID, cmd)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create signature: %s", err)
+	}
+
+	o.client.Header.Set("Accept", "*/*")
+	o.client.Header.Set("Date", date)
+	o.client.Header.Set("Authorization", authHeader(o.keyID, signature))
+
+	return o.client.R().Put("/?" + query)
+}
