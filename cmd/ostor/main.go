@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/cmd"
@@ -18,6 +18,9 @@ var (
 )
 
 func main() {
+	// initialize a default logger
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})))
+
 	app := &cli.App{
 		Name:     "ostor-client",
 		HelpName: "a program to interact with the s3 management APIs in ACI and VHI",
@@ -62,14 +65,32 @@ func main() {
 				Name:    "stats",
 				Aliases: []string{"s"},
 				Usage:   "list stats",
-				Action:  cmd.List,
+				Flags:   []cli.Flag{
+					// &cli.TimestampFlag{
+					// 	Name:     "from",
+					// 	Layout:   "2006-01-02",
+					// 	Timezone: time.UTC,
+					// 	Required: false,
+					// },
+				},
+				Action: cmd.ShowStats,
 			},
 			{
 				Name:    "users",
 				Aliases: []string{"u"},
-				Usage:   "list users",
+				Usage:   "manage users",
 				Action:  cmd.Users,
 				Subcommands: []*cli.Command{
+					{
+						Name: "create",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "email",
+								Required: true,
+							},
+						},
+						Action: cmd.CreateUser,
+					},
 					{
 						Name: "show",
 						Flags: []cli.Flag{
@@ -110,6 +131,7 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
