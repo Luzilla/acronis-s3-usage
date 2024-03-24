@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -19,39 +21,67 @@ type stat struct {
 	Uploaded   int
 }
 
-func List(cCtx *cli.Context) error {
+func ShowStats(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
-	items, err := client.List()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Found %d objects\n", items.Count)
-	fmt.Printf("Truncated: %t\n", items.Truncated)
-
-	if items.Count == 0 {
-		fmt.Println("no items")
-		return nil
-	}
+	// fmt.Printf("from: %s\n", cCtx.Timestamp("from").String())
 
 	keep := map[string]stat{}
+	var after *string
 
-	for _, obj := range items.Items {
-		// fmt.Println(obj)
-		usage, err := client.ObjectUsage(obj)
-		if err != nil {
-			fmt.Println("usage: " + err.Error())
-			os.Exit(2)
-		}
+	// this is for pure display
+	page := 0
 
-		for _, item := range usage.Items {
-			var b = item.Key.Bucket
-			if _, ok := keep[b]; !ok {
-				keep[b] = stat{}
+	for {
+
+		if after != nil {
+			slog.Debug("next page", slog.String("after", *after))
+			if strings.Contains(*after, "1970") {
+				break
 			}
-			keep[b] = addToStruct(keep[b], item.Counters.Operations, item.Counters.Net)
 		}
+
+		page++
+		items, err := client.List(after)
+		if err != nil {
+			return err
+		}
+
+		slog.Debug("found items", slog.Int("page", page), slog.Int("items", items.Count), slog.Bool("truncated", items.Truncated))
+
+		if items.Count == 0 {
+			break
+		}
+
+		for _, obj := range items.Items {
+			// fmt.Println(obj)
+			usage, err := client.ObjectUsage(obj)
+			if err != nil {
+				fmt.Println("usage: " + err.Error())
+				os.Exit(2)
+			}
+
+			for _, item := range usage.Items {
+				var b = item.Key.Bucket
+				if _, ok := keep[b]; !ok {
+					keep[b] = stat{}
+				}
+				keep[b] = addToStruct(keep[b], item.Counters.Operations, item.Counters.Net)
+			}
+
+			after = &obj
+		}
+
+		// end of the pagination - no more records
+		if !items.Truncated {
+			break
+		}
+
+	}
+
+	if len(keep) == 0 {
+		slog.Info("no stats")
+		return nil
 	}
 
 	tbl := table.New("Bucket", "Put", "Get", "List", "Other", "Downloaded", "Uploaded")
