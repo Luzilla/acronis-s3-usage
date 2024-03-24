@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -52,7 +53,9 @@ func ShowUser(cCtx *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf("Email: %s (State: %s)\n", user.Email, user.State)
+	fmt.Printf("ID:    %s\n", user.ID)
+	fmt.Printf("Email: %s\n", user.Email)
+	fmt.Printf("State: %s\n", user.State)
 	fmt.Println("")
 
 	tblAK := table.New("Key ID", "Secret Key ID")
@@ -88,13 +91,12 @@ func RevokeKey(cCtx *cli.Context) error {
 	email := cCtx.String("email")
 	keyID := cCtx.String("key-id")
 
-	resp, err := client.RevokeKey(email, keyID)
+	_, err := client.RevokeKey(email, keyID)
 	if err != nil {
 		return err
 	}
-	fmt.Println("success")
+	slog.Info("success")
 
-	fmt.Printf("%s", resp)
 	return nil
 }
 
@@ -107,6 +109,7 @@ func CreateKey(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("success")
+	slog.Info("success")
+
 	return nil
 }

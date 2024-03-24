@@ -1,9 +1,6 @@
 package ostor
 
 import (
-	"fmt"
-	"io"
-
 	"github.com/go-resty/resty/v2"
 )
 
@@ -11,29 +8,26 @@ import (
 const qUsers string = "ostor-users"
 
 func (o *Ostor) CreateUser(email string) error {
-	_, err := o.putRequest(qUsers, qUsers+"&emailAddress="+email)
+	_, err := o.put(qUsers, qUsers+"&emailAddress="+email)
 	return err
 }
 
 func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
 	var users *OstorUsersListResponse
-	_, err := o.getRequest(qUsers, qUsers, &users)
+	_, err := o.get(qUsers, map[string]string{}, &users)
 	return users, err
 }
 
 func (o *Ostor) GetUser(email string) (*OstorUser, error) {
 	var user *OstorUser
-	resp, err := o.getRequest(qUsers, qUsers+"&emailAddress="+email, &user)
-
-	b, _ := io.ReadAll(resp.RawResponse.Body)
-	fmt.Printf("show: %s", b)
+	_, err := o.get(qUsers, map[string]string{"emailAddress": email}, &user)
 	return user, err
 }
 
 func (o *Ostor) GenerateCredentials(email string) (*resty.Response, error) {
-	return o.postRequest(qUsers, qUsers+"&emailAddress="+email+"&genKey")
+	return o.post(qUsers, qUsers+"&emailAddress="+email+"&genKey")
 }
 
 func (o *Ostor) RevokeKey(email, accessKeyID string) (*resty.Response, error) {
-	return o.postRequest(qUsers, qUsers+"&emailAddress="+email+"&revokeKey="+accessKeyID)
+	return o.post(qUsers, qUsers+"&emailAddress="+email+"&revokeKey="+accessKeyID)
 }
