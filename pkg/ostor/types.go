@@ -49,12 +49,18 @@ type OStorResponse struct {
 // }
 
 type OStorObjectUsageResponse struct {
-	Version   int    `json:"fmt_version"`
+	// probably an API version of some kind
+	Version int `json:"fmt_version"`
+	// volume ID (ostor-ctl get-config)
 	ServiceID string `json:"service_id"`
-	StartTS   int    `json:"start_ts"`
-	Period    int    `json:"period"`
-	Count     int    `json:"nr_items"`
-	Items     []struct {
+	// start time of the object you are looking at
+	StartTS int64 `json:"start_ts"`
+	// sample interval of the object (usually ~30 seconds)
+	Period int `json:"period"`
+	// number of items in the response
+	Count int `json:"nr_items"`
+	// the actual items
+	Items []struct {
 		Key      ItemKey `json:"key"`
 		Counters struct {
 			Operations ItemCountersOps `json:"ops"`
@@ -65,6 +71,7 @@ type OStorObjectUsageResponse struct {
 
 type ItemKey struct {
 	Bucket string `json:"bucket"`
+	// identifier for the item/record
 	Epoch  int    `json:"epoch"`
 	UserID string `json:"user_id"`
 	Tag    string `json:"tag"`

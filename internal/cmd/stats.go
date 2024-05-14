@@ -21,6 +21,9 @@ type stat struct {
 	Uploaded   int
 }
 
+// show stats is really expensive, it will (attempt to) crawl the entire `?ostor-usage` endpoint
+// and look up individual entries when returned, so for n pages returned from `?ostor-usage`, it
+// will make n * number of items returned requests to `?ostor-usage&obj=FOO`
 func ShowStats(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
