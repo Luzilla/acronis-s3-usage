@@ -15,7 +15,7 @@ require (
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/rodaine/table v1.2.0
+	github.com/rodaine/table v1.3.0
 	github.com/urfave/cli/v2 v2.27.3
 	golang.org/x/net v0.25.0 // indirect
 )
