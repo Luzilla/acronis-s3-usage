@@ -102,18 +102,20 @@ type OstorUsersListResponse struct {
 	Users []OstorUser `json:"users"`
 }
 
+type AccessKeyList []struct {
+	AccessKeyID     string `json:"AWSAccessKeyId"`
+	SecretAccessKey string `json:"AWSSecretAccessKey"`
+}
+
 type OstorUser struct {
-	Email      string   `json:"UserEmail"`
-	ID         string   `json:"UserId"`
-	State      string   `json:"State"`
-	Owner      string   `json:OwnerId"`
-	Flags      []string `json:"Flags"`
-	AccessKeys []struct {
-		KeyID       string `json:"AWSAccessKeyId"`
-		SecretKeyID string `json:"AWSSecretAccessKey"`
-	} `json:"AWSAccessKeys,omitempty"`
+	Email        string        `json:"UserEmail"`
+	ID           string        `json:"UserId"`
+	State        string        `json:"State"`
+	Owner        string        `json:"OwnerId"`
+	Flags        []string      `json:"Flags"`
+	AccessKeys   AccessKeyList `json:"AWSAccessKeys,omitempty"`
 	AccountCount string        `json:"AccountCount,omitempty"`
-	Accounts     []interface{} `json:"Accounts",omitempty`
+	Accounts     []interface{} `json:"Accounts,omitempty"`
 }
 
 // {
@@ -150,4 +152,10 @@ type OstorBucketListResponse struct {
 			LastTS    int `json:"last_ts"`
 		} `json:"size"`
 	}
+}
+
+type OstorCreateUserResponse struct {
+	Email      string        `json:"UserEmail"`
+	ID         string        `json:"UserId"`
+	AccessKeys AccessKeyList `json:"AWSAccessKeys"`
 }

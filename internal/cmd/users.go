@@ -34,12 +34,19 @@ func CreateUser(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	err := client.CreateUser(email)
+	user, err := client.CreateUser(email)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("success")
+
+	fmt.Printf("ID: %s\n", user.ID)
+	fmt.Printf("Email: %s\n", user.Email)
+
+	fmt.Println("Generated the following key-pair:")
+	fmt.Printf("Key ID: %s\n", user.AccessKeys[0].AccessKeyID)
+	fmt.Printf("Secret Access Key: %s\n", user.AccessKeys[0].SecretAccessKey)
 	return nil
 }
 
@@ -62,7 +69,7 @@ func ShowUser(cCtx *cli.Context) error {
 	tblAK.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
 	for _, ak := range user.AccessKeys {
-		tblAK.AddRow(ak.KeyID, ak.SecretKeyID)
+		tblAK.AddRow(ak.AccessKeyID, ak.SecretAccessKey)
 	}
 
 	tblAK.Print()

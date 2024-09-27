@@ -7,9 +7,10 @@ import (
 // query parameter for user management
 const qUsers string = "ostor-users"
 
-func (o *Ostor) CreateUser(email string) error {
-	_, err := o.put(qUsers, qUsers+"&emailAddress="+email)
-	return err
+func (o *Ostor) CreateUser(email string) (*OstorCreateUserResponse, error) {
+	var user *OstorCreateUserResponse
+	_, err := o.put(qUsers, qUsers+"&emailAddress="+email, &user)
+	return user, err
 }
 
 func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {

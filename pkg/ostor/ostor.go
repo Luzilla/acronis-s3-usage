@@ -61,8 +61,8 @@ func (o *Ostor) post(cmd, query string) (*resty.Response, error) {
 	return o.request(o.client.R(), cmd, resty.MethodPost, "/?"+query)
 }
 
-func (o *Ostor) put(cmd, query string) (*resty.Response, error) {
-	return o.request(o.client.R(), cmd, resty.MethodPut, "/?"+query)
+func (o *Ostor) put(cmd, query string, into any) (*resty.Response, error) {
+	return o.request(o.client.R().SetResult(&into), cmd, resty.MethodPut, "/?"+query)
 }
 
 func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Response, error) {
