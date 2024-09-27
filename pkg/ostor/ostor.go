@@ -57,8 +57,12 @@ func (o *Ostor) get(cmd string, query map[string]string, into any) (*resty.Respo
 		SetResult(&into), cmd, resty.MethodGet, "/?"+cmd)
 }
 
-func (o *Ostor) post(cmd, query string) (*resty.Response, error) {
-	return o.request(o.client.R(), cmd, resty.MethodPost, "/?"+query)
+func (o *Ostor) post(cmd, query string, into any) (*resty.Response, error) {
+	var request = o.client.R()
+	if into != nil {
+		request = request.SetResult(into)
+	}
+	return o.request(request, cmd, resty.MethodPost, "/?"+query)
 }
 
 func (o *Ostor) put(cmd, query string, into any) (*resty.Response, error) {
