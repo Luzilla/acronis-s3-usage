@@ -2,7 +2,7 @@ module github.com/Luzilla/acronis-s3-usage
 
 go 1.21
 
-require github.com/go-resty/resty/v2 v2.15.2
+require github.com/go-resty/resty/v2 v2.15.3
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
