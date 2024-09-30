@@ -34,7 +34,7 @@ func CreateUser(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	user, err := client.CreateUser(email)
+	user, _, err := client.CreateUser(email)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func ShowUser(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	user, err := client.GetUser(email)
+	user, _, err := client.GetUser(email)
 	if err != nil {
 		return err
 	}
