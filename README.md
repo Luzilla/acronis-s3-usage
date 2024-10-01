@@ -1,10 +1,22 @@
 # acronis-s3-usage
 
-This is a playground to explore certain APIs provided by ACI (or VHI) to extract usage for the object storage provided.
+This project started as a playground to explore certain APIs provided by ACI (or VHI) to extract usage for the object storage provided. It now hosts a libraries to interact with ACI (specifically) and Ostor APIs (for Acronis and Virtuozzo Object Storage).
 
-## pull overall usage (ACI)
+## library
 
-Some code to pull S3 storage usage by tenant.
+See the [`pkg`](./pkg/) directory for the Golang libraries (or SDKs, if you will) for `acronis` (ACI) and the the Acronis/Virtuozzo Ostor API.
+
+## toys
+
+This repository includes ready code that allows you to run code examples against your Acronis or Virtuozzo setups.
+
+Each tool will take arguments for the user/password of required tokens/credentials, but also supports environment variables (see [`.envrc-dist`](./.envrc-dist))
+
+The command line tools (along with the source code), are also available as [release downloads](https://github.com/Luzilla/acronis-s3-usage/releases).
+
+### pull overall usage (ACI)
+
+A command line tool to pull S3 storage usage by tenant from Acronis Cyber Infrastructure (ACI).
 
 ```sh
 $ go run ./cmd/tenant-usage/main.go
@@ -18,7 +30,9 @@ Cyber Infrastructure (Type: hci)
 hci_s3_storage -- 4619.61 GB
 ```
 
-## extract usage for buckets (ACI &amp; VHI)
+### extract usage for buckets (ACI &amp; VHI)
+
+A command line tool to interact with the Ostor APIs — it allows user management, bucket management and extracting statistics (e.g. number of GET, HEAD, POST and PUT requests and storage used).
 
 ```sh
 ❯ go run ./cmd/ostor/main.go --help
@@ -44,3 +58,11 @@ GLOBAL OPTIONS:
    --help, -h                show help
    --version, -v             print the version
 ```
+
+## adopters
+
+- [Planetary Quantum GmbH](https://www.planetary-quantum.com/)
+
+## contributions
+
+If you end up using this, feel free to let me know by adding yourself to the adopers. All contributions (documentation, bug fixes, feature suggestions) are welcome.

@@ -1,15 +1,14 @@
 package ostor
 
-import (
-	"github.com/go-resty/resty/v2"
-)
+import "github.com/go-resty/resty/v2"
 
 // query parameter for user management
 const qUsers string = "ostor-users"
 
-func (o *Ostor) CreateUser(email string) error {
-	_, err := o.put(qUsers, qUsers+"&emailAddress="+email)
-	return err
+func (o *Ostor) CreateUser(email string) (*OstorCreateUserResponse, *resty.Response, error) {
+	var user *OstorCreateUserResponse
+	resp, err := o.put(qUsers, qUsers+"&emailAddress="+email, &user)
+	return user, resp, err
 }
 
 func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
@@ -18,16 +17,19 @@ func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
 	return users, err
 }
 
-func (o *Ostor) GetUser(email string) (*OstorUser, error) {
+func (o *Ostor) GetUser(email string) (*OstorUser, *resty.Response, error) {
 	var user *OstorUser
-	_, err := o.get(qUsers, map[string]string{"emailAddress": email}, &user)
-	return user, err
+	resp, err := o.get(qUsers, map[string]string{"emailAddress": email}, &user)
+	return user, resp, err
 }
 
-func (o *Ostor) GenerateCredentials(email string) (*resty.Response, error) {
-	return o.post(qUsers, qUsers+"&emailAddress="+email+"&genKey")
-}
+func (o *Ostor) LockUnlockUser(email string, lock bool) (*resty.Response, error) {
+	params := qUsers + "&emailAddress=" + email
+	if lock {
+		params += "&disable"
+	} else {
+		params += "&enable"
+	}
 
-func (o *Ostor) RevokeKey(email, accessKeyID string) (*resty.Response, error) {
-	return o.post(qUsers, qUsers+"&emailAddress="+email+"&revokeKey="+accessKeyID)
+	return o.put(qUsers, params, nil)
 }

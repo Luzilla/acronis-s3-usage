@@ -1,9 +1,9 @@
-# for tenant-usage
+# for tenant-usage (ACI)
 export ACI_CLIENT_ID=
 export ACI_SECRET=
 # export ACI_DC_URL=
 
-# for bucket-usage (system user)
+# for ostor APIS / bucket-usage (system user)
 export S3_ENDPOINT=
 export S3_SYSTEM_KEY_ID=
 export S3_SYSTEM_SECRET_KEY=
