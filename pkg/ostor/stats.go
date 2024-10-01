@@ -1,8 +1,10 @@
 package ostor
 
+import "github.com/go-resty/resty/v2"
+
 const qStats string = "ostor-usage"
 
-func (o *Ostor) List(after *string) (*OStorResponse, error) {
+func (o *Ostor) List(after *string) (*OStorResponse, *resty.Response, error) {
 	var stats *OStorResponse
 
 	queryString := map[string]string{}
@@ -16,21 +18,13 @@ func (o *Ostor) List(after *string) (*OStorResponse, error) {
 	// - limit cannot be used with pagination (unless we implement other logic)
 	// queryString["limit"] = strconv.Itoa(710)
 
-	_, err := o.get(qStats, queryString, &stats)
-	if err != nil {
-		return stats, err
-	}
-
-	return stats, err
+	resp, err := o.get(qStats, queryString, &stats)
+	return stats, resp, err
 }
 
-func (o *Ostor) ObjectUsage(object string) (*OStorObjectUsageResponse, error) {
+func (o *Ostor) ObjectUsage(object string) (*OStorObjectUsageResponse, *resty.Response, error) {
 	var usage *OStorObjectUsageResponse
 
-	_, err := o.get(qStats, map[string]string{"obj": object}, &usage)
-	if err != nil {
-		return usage, err
-	}
-
-	return usage, err
+	resp, err := o.get(qStats, map[string]string{"obj": object}, &usage)
+	return usage, resp, err
 }

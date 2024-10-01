@@ -45,7 +45,7 @@ func ShowStats(cCtx *cli.Context) error {
 		}
 
 		page++
-		items, err := client.List(after)
+		items, _, err := client.List(after)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func ShowStats(cCtx *cli.Context) error {
 
 		for _, obj := range items.Items {
 			// fmt.Println(obj)
-			usage, err := client.ObjectUsage(obj)
+			usage, _, err := client.ObjectUsage(obj)
 			if err != nil {
 				fmt.Println("usage: " + err.Error())
 				os.Exit(2)

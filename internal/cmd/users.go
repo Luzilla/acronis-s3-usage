@@ -13,7 +13,7 @@ import (
 func Users(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
-	resp, err := client.ListUsers()
+	users, _, err := client.ListUsers()
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func Users(cCtx *cli.Context) error {
 	tbl := table.New("Email", "ID", "State")
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
-	for _, u := range resp.Users {
+	for _, u := range users.Users {
 		tbl.AddRow(u.Email, u.ID, u.State)
 	}
 	tbl.Print()
@@ -79,7 +79,7 @@ func ShowUser(cCtx *cli.Context) error {
 
 	fmt.Println("")
 
-	buckets, err := client.GetBuckets(email)
+	buckets, _, err := client.GetBuckets(email)
 	if err != nil {
 		return err
 	}

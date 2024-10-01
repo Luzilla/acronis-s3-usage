@@ -10,7 +10,7 @@ import (
 func ListBuckets(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
-	buckets, err := client.GetBuckets("")
+	buckets, _, err := client.GetBuckets("")
 	if err != nil {
 		return err
 	}
