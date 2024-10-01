@@ -55,8 +55,11 @@ func ShowUser(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	user, _, err := client.GetUser(email)
+	user, resp, err := client.GetUser(email)
 	if err != nil {
+		if resp.StatusCode() == 404 {
+			return fmt.Errorf("no user with email %q found", email)
+		}
 		return err
 	}
 
@@ -112,7 +115,7 @@ func CreateKey(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	_, err := client.GenerateCredentials(email)
+	_, _, err := client.GenerateCredentials(email)
 	if err != nil {
 		return err
 	}

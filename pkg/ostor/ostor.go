@@ -103,16 +103,16 @@ func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Res
 		// fmt.Printf("%v", res.Request)
 		// b, _ := io.ReadAll(res.RawBody())
 		// fmt.Println(b)
-		return nil, fmt.Errorf("request failed: %s", err)
+		return res, fmt.Errorf("request failed: %s", err)
 	}
 
 	if res.IsError() {
 		headers := res.Header()
 		if headers.Get("X-Amz-Err-Message") != "" {
-			return nil, fmt.Errorf("request failed: %s", headers.Get("X-Amz-Err-Message"))
+			return res, fmt.Errorf("request failed: %s", headers.Get("X-Amz-Err-Message"))
 		}
 
-		return nil, fmt.Errorf("unable to make request: %d", res.StatusCode())
+		return res, fmt.Errorf("unable to make request: %d", res.StatusCode())
 	}
 
 	return res, nil
