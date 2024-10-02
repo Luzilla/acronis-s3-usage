@@ -11,10 +11,10 @@ func (o *Ostor) CreateUser(email string) (*OstorCreateUserResponse, *resty.Respo
 	return user, resp, err
 }
 
-func (o *Ostor) ListUsers() (*OstorUsersListResponse, error) {
+func (o *Ostor) ListUsers() (*OstorUsersListResponse, *resty.Response, error) {
 	var users *OstorUsersListResponse
-	_, err := o.get(qUsers, map[string]string{}, &users)
-	return users, err
+	resp, err := o.get(qUsers, map[string]string{}, &users)
+	return users, resp, err
 }
 
 func (o *Ostor) GetUser(email string) (*OstorUser, *resty.Response, error) {

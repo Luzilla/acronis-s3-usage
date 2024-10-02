@@ -13,7 +13,7 @@ import (
 func Users(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
-	resp, err := client.ListUsers()
+	users, _, err := client.ListUsers()
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func Users(cCtx *cli.Context) error {
 	tbl := table.New("Email", "ID", "State")
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
-	for _, u := range resp.Users {
+	for _, u := range users.Users {
 		tbl.AddRow(u.Email, u.ID, u.State)
 	}
 	tbl.Print()
@@ -55,8 +55,11 @@ func ShowUser(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	user, _, err := client.GetUser(email)
+	user, resp, err := client.GetUser(email)
 	if err != nil {
+		if resp.StatusCode() == 404 {
+			return fmt.Errorf("no user with email %q found", email)
+		}
 		return err
 	}
 
@@ -76,7 +79,7 @@ func ShowUser(cCtx *cli.Context) error {
 
 	fmt.Println("")
 
-	buckets, err := client.GetBuckets(email)
+	buckets, _, err := client.GetBuckets(email)
 	if err != nil {
 		return err
 	}
@@ -112,7 +115,7 @@ func CreateKey(cCtx *cli.Context) error {
 
 	email := cCtx.String("email")
 
-	_, err := client.GenerateCredentials(email)
+	_, _, err := client.GenerateCredentials(email)
 	if err != nil {
 		return err
 	}
