@@ -11,6 +11,7 @@ jobs:
       with:
         go-version-file: go.mod
     - uses: docker://morphy/revive-action:v2
+    - run: go test -v ./...
 
   build:
     runs-on: ubuntu-latest
