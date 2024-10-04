@@ -60,6 +60,38 @@ func CreateUser(cCtx *cli.Context) error {
 	return nil
 }
 
+func LockUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+	err := lockUnLockUser(client, email, true)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Locked the account")
+	return nil
+}
+
+func UnlockUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+	err := lockUnLockUser(client, email, false)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Unlocked the account")
+	return nil
+}
+
+func lockUnLockUser(client *ostor.Ostor, email string, lock bool) error {
+	resp, err := client.LockUnlockUser(email, lock)
+	fmt.Println(string(resp.Body()))
+	return err
+}
+
 func ShowUser(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
