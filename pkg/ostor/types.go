@@ -102,10 +102,7 @@ type OstorUsersListResponse struct {
 	Users []OstorUser `json:"users"`
 }
 
-type AccessKeyList []struct {
-	AccessKeyID     string `json:"AWSAccessKeyId"`
-	SecretAccessKey string `json:"AWSSecretAccessKey"`
-}
+type AccessKeyList []AccessKeyPair
 
 type OstorUser struct {
 	Email        string        `json:"UserEmail"`
@@ -139,19 +136,28 @@ type OstorUser struct {
 //           "current" : 139658698, "hmax": 139658698, "h_integral": 1345907736733, "last_ts": 465442
 //         }  },
 
+type BucketSize struct {
+	Current   int `json:"current"`
+	HMax      int `json:"hmax"`
+	HIntegral int `json:"h_integral"`
+	LastTS    int `json:"last_ts"`
+}
+
+type Bucket struct {
+	Name      string     `json:"name"`
+	Epoch     int        `json:"epoc"`
+	CreatedAt string     `json:"creation_date"`
+	OwnerID   string     `json:"owner_id"`
+	Size      BucketSize `json:"size"`
+}
+
 type OstorBucketListResponse struct {
-	Buckets []struct {
-		Name      string `json:"name"`
-		Epoch     int    `json:"epoc"`
-		CreatedAt string `json:"creation_date"`
-		OwnerID   string `json:"owner_id"`
-		Size      struct {
-			Current   int `json:"current"`
-			HMax      int `json:"hmax"`
-			HIntegral int `json:"h_integral"`
-			LastTS    int `json:"last_ts"`
-		} `json:"size"`
-	}
+	Buckets []Bucket `json:"Buckets"`
+}
+
+type AccessKeyPair struct {
+	AccessKeyID     string `json:"AWSAccessKeyId"`
+	SecretAccessKey string `json:"AWSSecretAccessKey"`
 }
 
 type OstorCreateUserResponse struct {
