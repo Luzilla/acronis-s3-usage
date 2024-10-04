@@ -11,9 +11,15 @@ func (o *Ostor) CreateUser(email string) (*OstorCreateUserResponse, *resty.Respo
 	return user, resp, err
 }
 
-func (o *Ostor) ListUsers() (*OstorUsersListResponse, *resty.Response, error) {
+func (o *Ostor) ListUsers(usage bool) (*OstorUsersListResponse, *resty.Response, error) {
 	var users *OstorUsersListResponse
-	resp, err := o.get(qUsers, map[string]string{}, &users)
+
+	params := map[string]string{}
+	if usage {
+		params["space"] = ""
+	}
+
+	resp, err := o.get(qUsers, params, &users)
 	return users, resp, err
 }
 

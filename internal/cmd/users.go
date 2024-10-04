@@ -13,16 +13,26 @@ import (
 func Users(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 
-	users, _, err := client.ListUsers()
+	users, _, err := client.ListUsers(cCtx.Bool("usage"))
 	if err != nil {
 		return err
 	}
 
-	tbl := table.New("Email", "ID", "State")
+	var tbl table.Table
+	if cCtx.Bool("usage") {
+		tbl = table.New("Email", "ID", "State", "Space")
+	} else {
+		tbl = table.New("Email", "ID", "State")
+	}
+
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
 	for _, u := range users.Users {
-		tbl.AddRow(u.Email, u.ID, u.State)
+		if cCtx.Bool("usage") {
+			tbl.AddRow(u.Email, u.ID, u.State, formatBytes(u.Space.Current))
+		} else {
+			tbl.AddRow(u.Email, u.ID, u.State)
+		}
 	}
 	tbl.Print()
 
@@ -122,4 +132,24 @@ func CreateKey(cCtx *cli.Context) error {
 	slog.Info("success")
 
 	return nil
+}
+
+func formatBytes(bytes int64) string {
+	const (
+		KB = 1024
+		MB = KB * 1024
+		GB = MB * 1024
+		TB = GB * 1024
+	)
+
+	switch {
+	case bytes >= TB:
+		return fmt.Sprintf("%.2f TB", float64(bytes)/float64(TB))
+	case bytes >= GB:
+		return fmt.Sprintf("%.2f GB", float64(bytes)/float64(GB))
+	case bytes >= MB:
+		return fmt.Sprintf("%.2f MB", float64(bytes)/float64(MB))
+	default:
+		return fmt.Sprintf("%d Bytes", bytes)
+	}
 }
