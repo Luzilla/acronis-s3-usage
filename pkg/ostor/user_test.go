@@ -14,7 +14,7 @@ func (s *OstorTestSuite) TestLockUser() {
 }
 
 func (s *OstorTestSuite) TestListUsers() {
-	users, resp, err := s.client.ListUsers()
+	users, resp, err := s.client.ListUsers(false)
 	s.Assert().NotNil(users)
 	s.Assert().NotNil(resp)
 	s.Assert().NoError(err)

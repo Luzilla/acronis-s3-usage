@@ -104,15 +104,23 @@ type OstorUsersListResponse struct {
 
 type AccessKeyList []AccessKeyPair
 
+type UserSpaceStat struct {
+	LastUpdated int   `json:"LastTs"`
+	Current     int64 `json:"SizeCurr"`
+	SizeHMax    int64 `json:"SizeHMax"` // FIXME: what is it?
+	SizeHInt    int64 `json:"SizeHInt"` // FIXME: what is it?
+}
+
 type OstorUser struct {
-	Email        string        `json:"UserEmail"`
-	ID           string        `json:"UserId"`
-	State        string        `json:"State"`
-	Owner        string        `json:"OwnerId"`
-	Flags        []string      `json:"Flags"`
-	AccessKeys   AccessKeyList `json:"AWSAccessKeys,omitempty"`
-	AccountCount string        `json:"AccountCount,omitempty"`
-	Accounts     []interface{} `json:"Accounts,omitempty"`
+	Email        string         `json:"UserEmail"`
+	ID           string         `json:"UserId"`
+	State        string         `json:"State"`
+	Owner        string         `json:"OwnerId"`
+	Flags        []string       `json:"Flags"`
+	AccessKeys   AccessKeyList  `json:"AWSAccessKeys,omitempty"`
+	AccountCount string         `json:"AccountCount,omitempty"`
+	Accounts     []interface{}  `json:"Accounts,omitempty"`
+	Space        *UserSpaceStat `json:"SpaceStat,omitempty"`
 }
 
 // {
