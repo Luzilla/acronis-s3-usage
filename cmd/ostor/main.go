@@ -60,6 +60,12 @@ func main() {
 				Aliases: []string{"b"},
 				Usage:   "list buckets",
 				Action:  cmd.ListBuckets,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "email",
+						Required: false,
+					},
+				},
 			},
 			{
 				Name:    "stats",
