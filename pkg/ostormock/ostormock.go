@@ -118,12 +118,12 @@ func StartMockServer(t *testing.T) (*httptest.Server, string) {
 		"ostor-users", "",
 		"emailAddress", "{email}",
 	)
-	router.HandleFunc("/", disableEnableUserHandler).Methods(http.MethodPut).Queries(
+	router.HandleFunc("/", disableEnableUserHandler).Methods(http.MethodPost).Queries(
 		"ostor-users", "",
 		"emailAddress", "{email}",
 		"disable", "",
 	)
-	router.HandleFunc("/", disableEnableUserHandler).Methods(http.MethodPut).Queries(
+	router.HandleFunc("/", disableEnableUserHandler).Methods(http.MethodPost).Queries(
 		"ostor-users", "",
 		"emailAddress", "{email}",
 		"enable", "",

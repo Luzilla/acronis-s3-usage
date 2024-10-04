@@ -61,10 +61,7 @@ func main() {
 				Usage:   "list buckets",
 				Action:  cmd.ListBuckets,
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:     "email",
-						Required: false,
-					},
+					emailFlag(),
 				},
 			},
 			{
@@ -96,40 +93,42 @@ func main() {
 					{
 						Name: "create",
 						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:     "email",
-								Required: true,
-							},
+							emailFlag(),
 						},
 						Action: cmd.CreateUser,
 					},
 					{
+						Name: "lock",
+						Flags: []cli.Flag{
+							emailFlag(),
+						},
+						Action: cmd.LockUser,
+					},
+					{
+						Name: "unlock",
+						Flags: []cli.Flag{
+							emailFlag(),
+						},
+						Action: cmd.UnlockUser,
+					},
+					{
 						Name: "show",
 						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:     "email",
-								Required: true,
-							},
+							emailFlag(),
 						},
 						Action: cmd.ShowUser,
 					},
 					{
 						Name: "create-key",
 						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:     "email",
-								Required: true,
-							},
+							emailFlag(),
 						},
 						Action: cmd.CreateKey,
 					},
 					{
 						Name: "revoke-key",
 						Flags: []cli.Flag{
-							&cli.StringFlag{
-								Name:     "email",
-								Required: true,
-							},
+							emailFlag(),
 							&cli.StringFlag{
 								Name:     "key-id",
 								Required: true,
@@ -145,5 +144,12 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
+	}
+}
+
+func emailFlag() *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:     "email",
+		Required: true,
 	}
 }
