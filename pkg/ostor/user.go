@@ -37,5 +37,5 @@ func (o *Ostor) LockUnlockUser(email string, lock bool) (*resty.Response, error)
 		params += "&enable"
 	}
 
-	return o.put(qUsers, params, nil)
+	return o.post(qUsers, params, nil)
 }
