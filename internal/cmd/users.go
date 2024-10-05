@@ -29,7 +29,7 @@ func Users(cCtx *cli.Context) error {
 
 	for _, u := range users.Users {
 		if cCtx.Bool("usage") {
-			tbl.AddRow(u.Email, u.ID, u.State, formatBytes(u.Space.Current))
+			tbl.AddRow(u.Email, u.ID, u.State, utils.PrettyByteSize(int(u.Space.Current)))
 		} else {
 			tbl.AddRow(u.Email, u.ID, u.State)
 		}
@@ -164,24 +164,4 @@ func CreateKey(cCtx *cli.Context) error {
 	slog.Info("success")
 
 	return nil
-}
-
-func formatBytes(bytes int64) string {
-	const (
-		KB = 1024
-		MB = KB * 1024
-		GB = MB * 1024
-		TB = GB * 1024
-	)
-
-	switch {
-	case bytes >= TB:
-		return fmt.Sprintf("%.2f TB", float64(bytes)/float64(TB))
-	case bytes >= GB:
-		return fmt.Sprintf("%.2f GB", float64(bytes)/float64(GB))
-	case bytes >= MB:
-		return fmt.Sprintf("%.2f MB", float64(bytes)/float64(MB))
-	default:
-		return fmt.Sprintf("%d Bytes", bytes)
-	}
 }
