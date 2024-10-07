@@ -166,6 +166,25 @@ func CreateKey(cCtx *cli.Context) error {
 	return nil
 }
 
+func RotateKey(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+	keyID := cCtx.String("key-id")
+
+	keyPair, _, err := client.RotateKey(email, keyID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("New key generated:")
+	fmt.Printf("Access Key ID:     %s\n", keyPair.AccessKeyID)
+	fmt.Printf("Secret Access Key: %s\n", keyPair.SecretAccessKey)
+	fmt.Println("")
+
+	return nil
+}
+
 func UserLimits(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 

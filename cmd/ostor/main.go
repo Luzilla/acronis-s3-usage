@@ -137,6 +137,17 @@ func main() {
 						Action: cmd.RevokeKey,
 					},
 					{
+						Name: "rotate-key",
+						Flags: []cli.Flag{
+							emailFlag(),
+							&cli.StringFlag{
+								Name:     "key-id",
+								Required: true,
+							},
+						},
+						Action: cmd.RotateKey,
+					},
+					{
 						Name: "limits",
 						Flags: []cli.Flag{
 							emailFlag(),
