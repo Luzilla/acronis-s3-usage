@@ -136,6 +136,13 @@ func main() {
 						},
 						Action: cmd.RevokeKey,
 					},
+					{
+						Name: "limits",
+						Flags: []cli.Flag{
+							emailFlag(),
+						},
+						Action: cmd.UserLimits,
+					},
 				},
 			},
 		},
