@@ -123,6 +123,17 @@ type OstorUser struct {
 	Space        *UserSpaceStat `json:"SpaceStat,omitempty"`
 }
 
+// limits in ops/second
+// bandwidth in kb/second
+type OstorUserLimits struct {
+	OpsDefault   string `json:"ops:default"`
+	OpsGet       string `json:"ops:get"`
+	OpsPut       string `json:"ops:put"`
+	OpsList      string `json:"ops:list"`
+	OpsDelete    string `json:"ops:delete"`
+	BandwidthOut string `json:"bandwidth:out"`
+}
+
 // {
 // 	"UserEmail": "timo@suehl.com",
 // 	"UserId": "a69657b97bc522ae",

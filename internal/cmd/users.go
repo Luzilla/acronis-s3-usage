@@ -165,3 +165,28 @@ func CreateKey(cCtx *cli.Context) error {
 
 	return nil
 }
+
+func UserLimits(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+
+	limits, _, err := client.GetUserLimits(email)
+	if err != nil {
+		return nil
+	}
+
+	tbl := table.New("Limit", "Value")
+	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
+
+	tbl.AddRow("Ops Default (ops/sec)", limits.OpsDefault)
+	tbl.AddRow("Ops List (ops/sec)", limits.OpsList)
+	tbl.AddRow("Ops Delete (ops/sec)", limits.OpsDelete)
+	tbl.AddRow("Ops Get (ops/sec)", limits.OpsGet)
+	tbl.AddRow("Ops Put (ops/sec)", limits.OpsPut)
+	tbl.AddRow("Bandwidth Out (kb/sec)", limits.BandwidthOut)
+
+	tbl.Print()
+
+	return nil
+}
