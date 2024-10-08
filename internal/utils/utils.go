@@ -6,12 +6,12 @@ import (
 
 // credit:
 // https://gist.github.com/anikitenko/b41206a49727b83a530142c76b1cb82d?permalink_comment_id=4467913#gistcomment-4467913
-func PrettyByteSize(bytes int) string {
+func PrettyByteSize(bytes int64) string {
 	const (
-		KB = 1024
-		MB = KB * 1024
-		GB = MB * 1024
-		TB = GB * 1024
+		KB int64 = 1024
+		MB       = KB * 1024
+		GB       = MB * 1024
+		TB       = GB * 1024
 	)
 
 	switch {

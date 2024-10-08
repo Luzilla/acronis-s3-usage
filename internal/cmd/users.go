@@ -29,7 +29,7 @@ func Users(cCtx *cli.Context) error {
 
 	for _, u := range users.Users {
 		if cCtx.Bool("usage") {
-			tbl.AddRow(u.Email, u.ID, u.State, utils.PrettyByteSize(int(u.Space.Current)))
+			tbl.AddRow(u.Email, u.ID, u.State, utils.PrettyByteSize(u.Space.Current))
 		} else {
 			tbl.AddRow(u.Email, u.ID, u.State)
 		}

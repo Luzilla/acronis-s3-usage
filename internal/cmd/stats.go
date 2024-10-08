@@ -13,12 +13,12 @@ import (
 )
 
 type stat struct {
-	Put        int
-	Get        int
-	List       int
-	Other      int
-	Downloaded int
-	Uploaded   int
+	Put        int64
+	Get        int64
+	List       int64
+	Other      int64
+	Downloaded int64
+	Uploaded   int64
 }
 
 // show stats is really expensive, it will (attempt to) crawl the entire `?ostor-usage` endpoint
