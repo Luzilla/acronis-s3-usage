@@ -78,15 +78,15 @@ type ItemKey struct {
 }
 
 type ItemCountersOps struct {
-	Put   int `json:"put"`
-	Get   int `json:"get"`
-	List  int `json:"list"`
-	Other int `json:"other"`
+	Put   int64 `json:"put"`
+	Get   int64 `json:"get"`
+	List  int64 `json:"list"`
+	Other int64 `json:"other"`
 }
 
 type ItemCountersNet struct {
-	Uploaded   int `json:"uploaded"`
-	Downloaded int `json:"downloaded"`
+	Uploaded   int64 `json:"uploaded"`
+	Downloaded int64 `json:"downloaded"`
 }
 
 // { "Users":[
@@ -156,10 +156,10 @@ type OstorUserLimits struct {
 //         }  },
 
 type BucketSize struct {
-	Current   int `json:"current"`
-	HMax      int `json:"hmax"`
-	HIntegral int `json:"h_integral"`
-	LastTS    int `json:"last_ts"`
+	Current   int64 `json:"current"`
+	HMax      int64 `json:"hmax"`
+	HIntegral int64 `json:"h_integral"`
+	LastTS    int64 `json:"last_ts"`
 }
 
 type Bucket struct {

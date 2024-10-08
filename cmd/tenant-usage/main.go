@@ -73,7 +73,7 @@ func main() {
 						app.Name,
 						app.Type,
 						usages.Name,
-						utils.PrettyByteSize(int(math.Round(usages.AbsoluteValue))),
+						utils.PrettyByteSize(int64(math.Round(usages.AbsoluteValue))),
 					)
 				}
 			}
