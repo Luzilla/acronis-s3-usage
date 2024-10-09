@@ -110,29 +110,37 @@ func ShowUser(cCtx *cli.Context) error {
 	fmt.Printf("State: %s\n", user.State)
 	fmt.Println("")
 
-	tblAK := table.New("Key ID", "Secret Key ID")
-	tblAK.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
+	if len(user.AccessKeys) > 0 {
+		tblAK := table.New("Key ID", "Secret Key ID")
+		tblAK.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
-	for _, ak := range user.AccessKeys {
-		tblAK.AddRow(ak.AccessKeyID, ak.SecretAccessKey)
+		for _, ak := range user.AccessKeys {
+			tblAK.AddRow(ak.AccessKeyID, ak.SecretAccessKey)
+		}
+
+		tblAK.Print()
+
+		fmt.Println("")
+	} else {
+		errorNoticeFmt("User does not have any keys.")
 	}
-
-	tblAK.Print()
-
-	fmt.Println("")
 
 	buckets, _, err := client.GetBuckets(email)
 	if err != nil {
 		return err
 	}
 
-	tbl := table.New("Bucket", "Size (current)", "Created At")
-	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
+	if len(buckets.Buckets) > 0 {
+		tbl := table.New("Bucket", "Size (current)", "Created At")
+		tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
-	for _, b := range buckets.Buckets {
-		tbl.AddRow(b.Name, utils.PrettyByteSize(b.Size.Current), b.CreatedAt)
+		for _, b := range buckets.Buckets {
+			tbl.AddRow(b.Name, utils.PrettyByteSize(b.Size.Current), b.CreatedAt)
+		}
+		tbl.Print()
+	} else {
+		errorNoticeFmt("User does not have any buckets.")
 	}
-	tbl.Print()
 
 	return nil
 }
@@ -162,6 +170,25 @@ func CreateKey(cCtx *cli.Context) error {
 		return err
 	}
 	slog.Info("success")
+
+	return nil
+}
+
+func RotateKey(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+	keyID := cCtx.String("key-id")
+
+	keyPair, _, err := client.RotateKey(email, keyID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("New key generated:")
+	fmt.Printf("Access Key ID:     %s\n", keyPair.AccessKeyID)
+	fmt.Printf("Secret Access Key: %s\n", keyPair.SecretAccessKey)
+	fmt.Println("")
 
 	return nil
 }
