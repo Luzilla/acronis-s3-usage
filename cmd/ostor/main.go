@@ -63,6 +63,34 @@ func main() {
 				Flags: []cli.Flag{
 					emailFlag(),
 				},
+				Subcommands: []*cli.Command{
+					{
+						Name:    "delete",
+						Aliases: []string{"d"},
+						Action:  cmd.DeleteBucket,
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "bucket",
+								Required: true,
+							},
+							&cli.BoolFlag{
+								Name:  "confirm",
+								Value: false,
+							},
+						},
+					},
+					{
+						Name:    "show",
+						Aliases: []string{"s"},
+						Action:  cmd.ShowBucket,
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "bucket",
+								Required: true,
+							},
+						},
+					},
+				},
 			},
 			{
 				Name:    "stats",
