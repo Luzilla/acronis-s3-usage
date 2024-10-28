@@ -98,6 +98,13 @@ func main() {
 						Action: cmd.CreateUser,
 					},
 					{
+						Name: "delete",
+						Flags: []cli.Flag{
+							emailFlag(),
+						},
+						Action: cmd.DeleteUser,
+					},
+					{
 						Name: "lock",
 						Flags: []cli.Flag{
 							emailFlag(),

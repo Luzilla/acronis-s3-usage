@@ -51,6 +51,11 @@ func New(endpoint, accessKeyID, secretKeyID string) (*Ostor, error) {
 	}, nil
 }
 
+func (o *Ostor) delete(cmd string, query map[string]string) (*resty.Response, error) {
+	return o.request(o.client.R().
+		SetQueryParams(query), cmd, resty.MethodDelete, "/?"+cmd)
+}
+
 func (o *Ostor) get(cmd string, query map[string]string, into any) (*resty.Response, error) {
 	return o.request(o.client.R().
 		SetQueryParams(query).
@@ -89,6 +94,8 @@ func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Res
 	var res *resty.Response
 
 	switch method {
+	case resty.MethodDelete:
+		res, err = req.Delete(url)
 	case resty.MethodGet:
 		res, err = req.Get(url)
 	case resty.MethodPost:
@@ -109,7 +116,10 @@ func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Res
 	if res.IsError() {
 		headers := res.Header()
 		if headers.Get("X-Amz-Err-Message") != "" {
-			return res, fmt.Errorf("request failed: %s", headers.Get("X-Amz-Err-Message"))
+			return res, fmt.Errorf("request failed: %s (http status code: %d)",
+				headers.Get("X-Amz-Err-Message"),
+				res.StatusCode(),
+			)
 		}
 
 		return res, fmt.Errorf("unable to make request: %d", res.StatusCode())
