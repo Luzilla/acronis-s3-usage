@@ -44,7 +44,7 @@ func (o *Ostor) ListUsers(usage bool) (*OstorUsersListResponse, *resty.Response,
 
 func (o *Ostor) GetUser(email string) (*OstorUser, *resty.Response, error) {
 	var user *OstorUser
-	resp, err := o.get(qUsers, map[string]string{"emailAddress": email}, &user)
+	resp, err := o.get(qUsers, emailMap(email), &user)
 	return user, resp, err
 }
 
