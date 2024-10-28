@@ -1,6 +1,11 @@
 package ostor
 
-import "github.com/go-resty/resty/v2"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/go-resty/resty/v2"
+)
 
 // query parameter for user management
 const qUsers string = "ostor-users"
@@ -9,6 +14,20 @@ func (o *Ostor) CreateUser(email string) (*OstorCreateUserResponse, *resty.Respo
 	var user *OstorCreateUserResponse
 	resp, err := o.put(qUsers, qUsers+"&emailAddress="+email, &user)
 	return user, resp, err
+}
+
+func (o *Ostor) DeleteUser(email string) (*resty.Response, error) {
+	resp, err := o.delete(qUsers, emailMap(email))
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != http.StatusNoContent {
+		err = fmt.Errorf("wrong status code: %d", resp.StatusCode())
+		return resp, err
+	}
+
+	return resp, nil
 }
 
 func (o *Ostor) ListUsers(usage bool) (*OstorUsersListResponse, *resty.Response, error) {

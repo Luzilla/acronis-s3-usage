@@ -60,6 +60,22 @@ func CreateUser(cCtx *cli.Context) error {
 	return nil
 }
 
+func DeleteUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+
+	email := cCtx.String("email")
+
+	resp, err := client.DeleteUser(email)
+	if err != nil {
+		fmt.Println(resp.Request.URL)
+
+		return err
+	}
+
+	fmt.Println("Account deleted")
+	return nil
+}
+
 func LockUser(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
 

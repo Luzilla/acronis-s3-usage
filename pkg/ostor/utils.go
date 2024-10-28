@@ -33,3 +33,7 @@ func createSignature(httpMethod, awsSecretKey, query string) (signature string, 
 func authHeader(keyID, signature string) string {
 	return fmt.Sprintf("AWS %s:%s", keyID, signature)
 }
+
+func emailMap(email string) map[string]string {
+	return map[string]string{"emailAddress": email}
+}
