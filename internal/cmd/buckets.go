@@ -13,8 +13,8 @@ import (
 
 // this executes the action on 'behalf' of the user by returning the account
 // and using the first credential pair to run the delete operations
-func DeleteBucket(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func deleteBucket(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
 	s3, err := s3.NewS3(cCtx.String("s3-endpoint"), cCtx.String("email"), client)
 	if err != nil {
@@ -36,8 +36,8 @@ func DeleteBucket(cCtx *cli.Context) error {
 	return nil
 }
 
-func ListBuckets(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func listBuckets(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
 	buckets, _, err := client.GetBuckets(cCtx.String("email"))
 	if err != nil {
@@ -60,10 +60,10 @@ func ListBuckets(cCtx *cli.Context) error {
 	return nil
 }
 
-func ShowBucket(cCtx *cli.Context) error {
-	ListBuckets(cCtx) // display the filter view first
+func showBucket(cCtx *cli.Context) error {
+	listBuckets(cCtx) // display the filter view first
 
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
 	s3, err := s3.NewS3(cCtx.String("s3-endpoint"), cCtx.String("email"), client)
 	if err != nil {
