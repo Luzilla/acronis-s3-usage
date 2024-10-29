@@ -30,7 +30,7 @@ require (
 )
 
 require (
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/gorilla/mux v1.8.1
 	github.com/minio/minio-go/v7 v7.0.79
 	github.com/rodaine/table v1.3.0
