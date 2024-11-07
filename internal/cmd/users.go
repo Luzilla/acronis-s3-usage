@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -10,8 +9,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Users(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func users(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
 	users, _, err := client.ListUsers(cCtx.Bool("usage"))
 	if err != nil {
@@ -39,12 +38,10 @@ func Users(cCtx *cli.Context) error {
 	return nil
 }
 
-func CreateUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func createUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-
-	user, _, err := client.CreateUser(email)
+	user, _, err := client.CreateUser(cCtx.String("email"))
 	if err != nil {
 		return err
 	}
@@ -60,12 +57,10 @@ func CreateUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func DeleteUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func deleteUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-
-	resp, err := client.DeleteUser(email)
+	resp, err := client.DeleteUser(cCtx.String("email"))
 	if err != nil {
 		fmt.Println(resp.Request.URL)
 
@@ -76,11 +71,10 @@ func DeleteUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func LockUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func lockUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-	err := lockUnLockUser(client, email, true)
+	err := lockUnLockUser(client, cCtx.String("email"), true)
 	if err != nil {
 		return err
 	}
@@ -89,11 +83,10 @@ func LockUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func UnlockUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func unlockUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-	err := lockUnLockUser(client, email, false)
+	err := lockUnLockUser(client, cCtx.String("email"), false)
 	if err != nil {
 		return err
 	}
@@ -108,15 +101,13 @@ func lockUnLockUser(client *ostor.Ostor, email string, lock bool) error {
 	return err
 }
 
-func ShowUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func showUser(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-
-	user, resp, err := client.GetUser(email)
+	user, resp, err := client.GetUser(cCtx.String("email"))
 	if err != nil {
 		if resp.StatusCode() == 404 {
-			return fmt.Errorf("no user with email %q found", email)
+			return fmt.Errorf("no user with email %q found", cCtx.String("email"))
 		}
 		return err
 	}
@@ -141,7 +132,7 @@ func ShowUser(cCtx *cli.Context) error {
 		errorNoticeFmt("User does not have any keys.")
 	}
 
-	buckets, _, err := client.GetBuckets(email)
+	buckets, _, err := client.GetBuckets(cCtx.String("email"))
 	if err != nil {
 		return err
 	}
@@ -161,60 +152,10 @@ func ShowUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func RevokeKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
+func userLimits(cCtx *cli.Context) error {
+	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	email := cCtx.String("email")
-	keyID := cCtx.String("key-id")
-
-	_, err := client.RevokeKey(email, keyID)
-	if err != nil {
-		return err
-	}
-	slog.Info("success")
-
-	return nil
-}
-
-func CreateKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
-
-	email := cCtx.String("email")
-
-	_, _, err := client.GenerateCredentials(email)
-	if err != nil {
-		return err
-	}
-	slog.Info("success")
-
-	return nil
-}
-
-func RotateKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
-
-	email := cCtx.String("email")
-	keyID := cCtx.String("key-id")
-
-	keyPair, _, err := client.RotateKey(email, keyID)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("New key generated:")
-	fmt.Printf("Access Key ID:     %s\n", keyPair.AccessKeyID)
-	fmt.Printf("Secret Access Key: %s\n", keyPair.SecretAccessKey)
-	fmt.Println("")
-
-	return nil
-}
-
-func UserLimits(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(OstorClient).(*ostor.Ostor)
-
-	email := cCtx.String("email")
-
-	limits, _, err := client.GetUserLimits(email)
+	limits, _, err := client.GetUserLimits(cCtx.String("email"))
 	if err != nil {
 		return nil
 	}

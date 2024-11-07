@@ -1,5 +1,5 @@
 package cmd
 
 const (
-	OstorClient string = "xxclient"
+	ostorClient string = "xxclient"
 )
