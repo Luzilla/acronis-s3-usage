@@ -3,7 +3,7 @@ module github.com/Luzilla/acronis-s3-usage
 go 1.22
 
 require (
-	github.com/go-resty/resty/v2 v2.15.3
+	github.com/go-resty/resty/v2 v2.16.0
 	github.com/stretchr/testify v1.9.0
 )
 
