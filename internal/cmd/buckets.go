@@ -28,6 +28,8 @@ func deleteBucket(cCtx *cli.Context) error {
 		return err
 	}
 
+	fmt.Println("Bucket " + bucketName + " can be deleted")
+
 	if err := s3.DeleteBucket(ctx, bucketName); err != nil {
 		return err
 	}
