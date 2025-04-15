@@ -1,7 +1,6 @@
 module github.com/Luzilla/acronis-s3-usage
 
-go 1.22
-toolchain go1.24.1
+go 1.24.1
 
 require (
 	github.com/go-resty/resty/v2 v2.16.5
