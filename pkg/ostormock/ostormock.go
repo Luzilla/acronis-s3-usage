@@ -143,6 +143,12 @@ func StartMockServer(t *testing.T) (*httptest.Server, string) {
 	// Create a new test server
 	server := httptest.NewServer(router)
 
+	// handle clean-up in the library after each test
+	t.Cleanup(func() {
+		server.CloseClientConnections()
+		server.Close()
+	})
+
 	// Return the server and its URL
 	return server, server.URL
 }

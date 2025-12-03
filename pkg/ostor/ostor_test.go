@@ -2,13 +2,14 @@ package ostor_test
 
 import (
 	"log/slog"
-	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostormock"
 	"github.com/stretchr/testify/suite"
+
+	"go.uber.org/goleak"
 )
 
 func init() {
@@ -20,21 +21,18 @@ func init() {
 
 type OstorTestSuite struct {
 	suite.Suite
-	client     *ostor.Ostor
-	mockServer *httptest.Server
+	client *ostor.Ostor
 }
 
-func (s *OstorTestSuite) SetupSuite() {
-	server, url := ostormock.StartMockServer(s.T())
-	s.mockServer = server
+func (s *OstorTestSuite) SetupTest() {
+	_, url := ostormock.StartMockServer(s.T())
 
 	client, _ := ostor.New(url, "system", "system-pass")
 	s.client = client
 }
 
-func (s *OstorTestSuite) TeardownSuite() {
-	s.mockServer.CloseClientConnections()
-	s.mockServer.Close()
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
 }
 
 func TestOstor(t *testing.T) {
