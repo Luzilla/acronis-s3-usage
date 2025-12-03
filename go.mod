@@ -38,5 +38,6 @@ require (
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/rodaine/table v1.3.0
 	github.com/urfave/cli/v2 v2.27.7
+	go.uber.org/goleak v1.3.0
 	golang.org/x/net v0.43.0 // indirect
 )
