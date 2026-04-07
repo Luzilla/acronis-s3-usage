@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
@@ -60,8 +59,7 @@ func showStats(cCtx *cli.Context) error {
 			// fmt.Println(obj)
 			usage, _, err := client.ObjectUsage(obj)
 			if err != nil {
-				fmt.Println("usage: " + err.Error())
-				os.Exit(2)
+				return fmt.Errorf("failed to get usage for %q: %w", obj, err)
 			}
 
 			for _, item := range usage.Items {

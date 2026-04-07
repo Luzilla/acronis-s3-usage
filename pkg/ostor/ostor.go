@@ -4,18 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
 )
 
 var (
 	// init
-	errMissingEndpoint  = errors.New("missing endpoint")
-	errMissingAccessKey = errors.New("missing access key id")
-	errMissingSecretKey = errors.New("missing secret key id")
+	errMissingEndpoint  = &OstorConfigError{msg: "missing endpoint"}
+	errMissingAccessKey = &OstorConfigError{msg: "missing access key id"}
+	errMissingSecretKey = &OstorConfigError{msg: "missing secret key id"}
 
 	// usage
-	errMethodNotSupported = errors.New("unsupported method")
+	errMethodNotSupported = &OstorUsageError{msg: "unsupported method"}
 )
 
 type Ostor struct {
@@ -28,8 +29,9 @@ type Ostor struct {
 }
 
 func New(endpoint, accessKeyID, secretKeyID string) (*Ostor, error) {
-	http := resty.New()
-	http.SetBaseURL(endpoint)
+	endpoint = strings.TrimSpace(endpoint)
+	accessKeyID = strings.TrimSpace(accessKeyID)
+	secretKeyID = strings.TrimSpace(secretKeyID)
 
 	if len(endpoint) == 0 {
 		return nil, errMissingEndpoint
@@ -43,8 +45,11 @@ func New(endpoint, accessKeyID, secretKeyID string) (*Ostor, error) {
 		return nil, errMissingSecretKey
 	}
 
+	client := resty.New()
+	client.SetBaseURL(endpoint)
+
 	return &Ostor{
-		client:      http,
+		client:      client,
 		endpoint:    endpoint,
 		keyID:       accessKeyID,
 		secretKeyID: secretKeyID,
@@ -103,27 +108,34 @@ func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Res
 	case resty.MethodPut:
 		res, err = req.Put(url)
 	default:
-		err = errMethodNotSupported
+		// return early: this is a library problem
+		return res, errMethodNotSupported
 	}
 
 	if err != nil {
 		// fmt.Printf("%v", res.Request)
 		// b, _ := io.ReadAll(res.RawBody())
 		// fmt.Println(b)
-		return res, fmt.Errorf("request failed: %s", err)
-	}
-
-	if res.IsError() {
-		headers := res.Header()
-		if headers.Get("X-Amz-Err-Message") != "" {
-			return res, fmt.Errorf("request failed: %s (http status code: %d)",
-				headers.Get("X-Amz-Err-Message"),
-				res.StatusCode(),
-			)
+		return res, &OstorTransportError{
+			Res: res,
+			Err: err,
 		}
-
-		return res, fmt.Errorf("unable to make request: %d", res.StatusCode())
 	}
 
-	return res, nil
+	if !res.IsError() {
+		return res, nil
+	}
+
+	// error based on status code
+	if res.Header().Get("X-Amz-Err-Message") != "" {
+		return res, &OstorAPIError{
+			Res: res,
+			Err: errors.New(res.Header().Get("X-Amz-Err-Message")),
+		}
+	}
+
+	return res, &OstorTransportError{
+		Res: res,
+		Err: fmt.Errorf("unable to make request: %d", res.StatusCode()),
+	}
 }

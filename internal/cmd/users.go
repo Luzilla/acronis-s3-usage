@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -60,10 +62,12 @@ func createUser(cCtx *cli.Context) error {
 func deleteUser(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	resp, err := client.DeleteUser(cCtx.String("email"))
+	_, err := client.DeleteUser(cCtx.String("email"))
 	if err != nil {
-		fmt.Println(resp.Request.URL)
-
+		var transportErr *ostor.OstorTransportError
+		if errors.As(err, &transportErr) {
+			slog.Error("request failed", "err", transportErr)
+		}
 		return err
 	}
 
@@ -97,16 +101,20 @@ func unlockUser(cCtx *cli.Context) error {
 
 func lockUnLockUser(client *ostor.Ostor, email string, lock bool) error {
 	resp, err := client.LockUnlockUser(email, lock)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(resp.Body()))
-	return err
+	return nil
 }
 
 func showUser(cCtx *cli.Context) error {
 	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
 
-	user, resp, err := client.GetUser(cCtx.String("email"))
+	user, _, err := client.GetUser(cCtx.String("email"))
 	if err != nil {
-		if resp.StatusCode() == 404 {
+		var apiErr *ostor.OstorAPIError
+		if errors.As(err, &apiErr) && apiErr.Res.StatusCode() == 404 {
 			return fmt.Errorf("no user with email %q found", cCtx.String("email"))
 		}
 		return err
@@ -157,7 +165,7 @@ func userLimits(cCtx *cli.Context) error {
 
 	limits, _, err := client.GetUserLimits(cCtx.String("email"))
 	if err != nil {
-		return nil
+		return err
 	}
 
 	tbl := table.New("Limit", "Value")

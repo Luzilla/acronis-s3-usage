@@ -91,7 +91,7 @@ type ItemCountersNet struct {
 
 // { "Users":[
 // {
-// "UserEmail": "msbnamfus@customer.planetary-networks.de",
+// "UserEmail": "blah@customer.planetary-networks.de",
 // "UserId": "806e7d49f2dd9763",
 // "State": "enabled",
 // "OwnerId":"0000000000000000",
@@ -135,15 +135,15 @@ type OstorUserLimits struct {
 }
 
 // {
-// 	"UserEmail": "timo@suehl.com",
+// 	"UserEmail": "email@email.com",
 // 	"UserId": "a69657b97bc522ae",
 // 	"State": "enabled",
 // 	"OwnerId": "0000000000000000",
 // 	"Flags": [],
 // 	"AWSAccessKeys": [
 // 	{
-// 	"AWSAccessKeyId": "a69657b97bc522aeOLQJ",
-// 	"AWSSecretAccessKey": "Dxt0wLpukuUrjkwuAnNRPoyNaQ62vWOXtJEYbYxh"
+// 	"AWSAccessKeyId": "yyy",
+// 	"AWSSecretAccessKey": "xxx"
 // 	}],
 // 	"AccountCount": "0",
 // 	"Accounts": [
