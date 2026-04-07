@@ -1,19 +1,18 @@
 package ostor
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-
-	"github.com/go-resty/resty/v2"
 )
 
-func (o *Ostor) GenerateCredentials(email string) (*OstorCreateUserResponse, *resty.Response, error) {
+func (o *Ostor) GenerateCredentials(email string) (*OstorCreateUserResponse, *http.Response, error) {
 	var user *OstorCreateUserResponse
 	resp, err := o.post(qUsers, qUsers+"&emailAddress="+email+"&genKey", &user)
 	return user, resp, err
 }
 
-func (o *Ostor) RevokeKey(email, accessKeyID string) (*resty.Response, error) {
+func (o *Ostor) RevokeKey(email, accessKeyID string) (*http.Response, error) {
 	return o.post(qUsers, qUsers+"&emailAddress="+email+"&revokeKey="+accessKeyID, nil)
 }
 
@@ -21,10 +20,11 @@ func (o *Ostor) RevokeKey(email, accessKeyID string) (*resty.Response, error) {
 //
 // This feature is not a native feature in the APIs, so we build around it using
 // our own methods, by checking the user account and verifying what can happen.
-func (o *Ostor) RotateKey(email, accessKeyID string) (*AccessKeyPair, *resty.Response, error) {
+func (o *Ostor) RotateKey(email, accessKeyID string) (*AccessKeyPair, *http.Response, error) {
 	user, userResp, err := o.GetUser(email)
 	if err != nil {
-		if userResp.StatusCode() == http.StatusNotFound {
+		var apiErr *OstorAPIError
+		if errors.As(err, &apiErr) && apiErr.Res.StatusCode == http.StatusNotFound {
 			return nil, nil, fmt.Errorf("user %q does not exist", email)
 		}
 		return nil, userResp, err

@@ -2,9 +2,9 @@ package ostor
 
 import (
 	"errors"
+	"io"
 	"log/slog"
-
-	"github.com/go-resty/resty/v2"
+	"net/http"
 )
 
 type OstorConfigError struct {
@@ -24,7 +24,7 @@ func (e *OstorUsageError) Error() string {
 }
 
 type OstorAPIError struct {
-	Res *resty.Response
+	Res *http.Response
 	Err error
 }
 
@@ -33,7 +33,7 @@ func (e *OstorAPIError) Error() string {
 }
 
 type OstorTransportError struct {
-	Res *resty.Response
+	Res *http.Response
 	Err error
 }
 
@@ -48,16 +48,24 @@ func (e *OstorTransportError) LogValue() slog.Value {
 		)
 	}
 
+	var body string
+	if e.Res.Body != nil {
+		b, err := io.ReadAll(e.Res.Body)
+		if err == nil {
+			body = string(b)
+		}
+	}
+
 	return slog.GroupValue(
 		slog.Group("request",
-			slog.String("url", e.Res.Request.URL),
+			slog.String("url", e.Res.Request.URL.String()),
 			slog.String("method", e.Res.Request.Method),
 			slog.String("signature", e.Res.Request.Header.Get("authorization")),
 			slog.String("date", e.Res.Request.Header.Get("date")),
 		),
 		slog.Group("response",
-			slog.Any("headers", e.Res.Header()),
-			slog.String("body", string(e.Res.Body())),
+			slog.Any("headers", e.Res.Header),
+			slog.String("body", body),
 		),
 	)
 }

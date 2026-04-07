@@ -3,7 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -104,7 +106,8 @@ func lockUnLockUser(client *ostor.Ostor, email string, lock bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(resp.Body()))
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	return nil
 }
 
@@ -114,7 +117,7 @@ func showUser(cCtx *cli.Context) error {
 	user, _, err := client.GetUser(cCtx.String("email"))
 	if err != nil {
 		var apiErr *ostor.OstorAPIError
-		if errors.As(err, &apiErr) && apiErr.Res.StatusCode() == 404 {
+		if errors.As(err, &apiErr) && apiErr.Res.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("no user with email %q found", cCtx.String("email"))
 		}
 		return err

@@ -1,8 +1,10 @@
 package ostor
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -56,18 +58,18 @@ func New(endpoint, accessKeyID, secretKeyID string) (*Ostor, error) {
 	}, nil
 }
 
-func (o *Ostor) delete(cmd string, query map[string]string) (*resty.Response, error) {
+func (o *Ostor) delete(cmd string, query map[string]string) (*http.Response, error) {
 	return o.request(o.client.R().
 		SetQueryParams(query), cmd, resty.MethodDelete, "/?"+cmd)
 }
 
-func (o *Ostor) get(cmd string, query map[string]string, into any) (*resty.Response, error) {
+func (o *Ostor) get(cmd string, query map[string]string, into any) (*http.Response, error) {
 	return o.request(o.client.R().
 		SetQueryParams(query).
 		SetResult(&into), cmd, resty.MethodGet, "/?"+cmd)
 }
 
-func (o *Ostor) post(cmd, query string, into any) (*resty.Response, error) {
+func (o *Ostor) post(cmd, query string, into any) (*http.Response, error) {
 	request := o.client.R()
 	if into != nil {
 		request = request.SetResult(into)
@@ -75,7 +77,7 @@ func (o *Ostor) post(cmd, query string, into any) (*resty.Response, error) {
 	return o.request(request, cmd, resty.MethodPost, "/?"+query)
 }
 
-func (o *Ostor) put(cmd, query string, into any) (*resty.Response, error) {
+func (o *Ostor) put(cmd, query string, into any) (*http.Response, error) {
 	request := o.client.R()
 	if into != nil {
 		request = request.SetResult(&into)
@@ -83,7 +85,7 @@ func (o *Ostor) put(cmd, query string, into any) (*resty.Response, error) {
 	return o.request(request, cmd, resty.MethodPut, "/?"+query)
 }
 
-func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Response, error) {
+func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*http.Response, error) {
 	signature, date, err := createSignature(method, o.secretKeyID, cmd)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create signature: %s", err)
@@ -109,33 +111,44 @@ func (o *Ostor) request(req *resty.Request, cmd, method, url string) (*resty.Res
 		res, err = req.Put(url)
 	default:
 		// return early: this is a library problem
-		return res, errMethodNotSupported
+		return nil, errMethodNotSupported
 	}
 
 	if err != nil {
-		// fmt.Printf("%v", res.Request)
-		// b, _ := io.ReadAll(res.RawBody())
-		// fmt.Println(b)
-		return res, &OstorTransportError{
-			Res: res,
+		return toHTTPResponse(res), &OstorTransportError{
+			Res: toHTTPResponse(res),
 			Err: err,
 		}
 	}
 
-	if !res.IsError() {
-		return res, nil
+	httpRes := toHTTPResponse(res)
+
+	if res.StatusCode() < 400 {
+		return httpRes, nil
 	}
 
 	// error based on status code
 	if res.Header().Get("X-Amz-Err-Message") != "" {
-		return res, &OstorAPIError{
-			Res: res,
+		return httpRes, &OstorAPIError{
+			Res: httpRes,
 			Err: errors.New(res.Header().Get("X-Amz-Err-Message")),
 		}
 	}
 
-	return res, &OstorTransportError{
-		Res: res,
+	return httpRes, &OstorTransportError{
+		Res: httpRes,
 		Err: fmt.Errorf("unable to make request: %d", res.StatusCode()),
 	}
+}
+
+// toHTTPResponse converts a resty response to a stdlib *http.Response with
+// the body replaced by a re-readable buffer (resty already consumed it).
+func toHTTPResponse(res *resty.Response) *http.Response {
+	if res == nil {
+		return nil
+	}
+
+	raw := res.RawResponse
+	raw.Body = io.NopCloser(bytes.NewReader(res.Body()))
+	return raw
 }

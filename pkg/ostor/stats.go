@@ -1,10 +1,10 @@
 package ostor
 
-import "github.com/go-resty/resty/v2"
+import "net/http"
 
 const qStats string = "ostor-usage"
 
-func (o *Ostor) List(after *string) (*OStorResponse, *resty.Response, error) {
+func (o *Ostor) List(after *string) (*OStorResponse, *http.Response, error) {
 	var stats *OStorResponse
 
 	queryString := map[string]string{}
@@ -22,7 +22,7 @@ func (o *Ostor) List(after *string) (*OStorResponse, *resty.Response, error) {
 	return stats, resp, err
 }
 
-func (o *Ostor) ObjectUsage(object string) (*OStorObjectUsageResponse, *resty.Response, error) {
+func (o *Ostor) ObjectUsage(object string) (*OStorObjectUsageResponse, *http.Response, error) {
 	var usage *OStorObjectUsageResponse
 
 	resp, err := o.get(qStats, map[string]string{"obj": object}, &usage)

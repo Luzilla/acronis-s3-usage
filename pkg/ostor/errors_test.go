@@ -2,15 +2,13 @@ package ostor_test
 
 import (
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
-	"github.com/go-resty/resty/v2"
 )
 
 func (s *OstorTestSuite) TestNew() {
@@ -35,26 +33,25 @@ func (s *OstorTestSuite) TestNew() {
 }
 
 func (s *OstorTestSuite) TestTransportError() {
-	header := http.Header{}
-	header.Set("date", time.Now().Format(time.RFC1123Z))
-	header.Set("authorization", "something")
+	reqURL, _ := url.Parse("http://localhost")
 
-	req := &resty.Request{
-		URL:    "http://localhost",
+	req := &http.Request{
+		URL:    reqURL,
 		Method: "GET",
-		Header: header,
-	}
-
-	body := strings.NewReader("fixture")
-
-	res := &resty.Response{
-		Request: req,
-		RawResponse: &http.Response{
-			StatusCode: 401,
-			Body:       io.NopCloser(body),
+		Header: http.Header{
+			"Date":          {s.T().Name()},
+			"Authorization": {"something"},
 		},
 	}
-	res.SetBody([]byte("fixture"))
+
+	res := &http.Response{
+		StatusCode: 401,
+		Header:     http.Header{},
+		Body:       http.NoBody,
+		Request:    req,
+	}
+
+	_ = strings.NewReader("fixture")
 
 	err := &ostor.OstorTransportError{
 		Res: res,
