@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
@@ -50,8 +49,6 @@ func (s *OstorTestSuite) TestTransportError() {
 		Body:       http.NoBody,
 		Request:    req,
 	}
-
-	_ = strings.NewReader("fixture")
 
 	err := &ostor.OstorTransportError{
 		Res: res,

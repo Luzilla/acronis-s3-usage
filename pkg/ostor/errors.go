@@ -1,6 +1,7 @@
 package ostor
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"log/slog"
@@ -15,14 +16,6 @@ func (e *OstorConfigError) Error() string {
 	return e.msg
 }
 
-type OstorUsageError struct {
-	msg string
-}
-
-func (e *OstorUsageError) Error() string {
-	return e.msg
-}
-
 type OstorAPIError struct {
 	Res *http.Response
 	Err error
@@ -32,6 +25,10 @@ func (e *OstorAPIError) Error() string {
 	return e.Err.Error()
 }
 
+func (e *OstorAPIError) Unwrap() error {
+	return e.Err
+}
+
 type OstorTransportError struct {
 	Res *http.Response
 	Err error
@@ -39,6 +36,10 @@ type OstorTransportError struct {
 
 func (e *OstorTransportError) Error() string {
 	return e.Err.Error()
+}
+
+func (e *OstorTransportError) Unwrap() error {
+	return e.Err
 }
 
 func (e *OstorTransportError) LogValue() slog.Value {
@@ -53,6 +54,8 @@ func (e *OstorTransportError) LogValue() slog.Value {
 		b, err := io.ReadAll(e.Res.Body)
 		if err == nil {
 			body = string(b)
+			// Reset the body so it remains readable for subsequent callers
+			e.Res.Body = io.NopCloser(bytes.NewReader(b))
 		}
 	}
 
@@ -74,10 +77,4 @@ func (e *OstorTransportError) LogValue() slog.Value {
 func IsConfigError(err error) bool {
 	var configErr *OstorConfigError
 	return errors.As(err, &configErr)
-}
-
-// IsUsageError returns true when the library is doing something wrong
-func IsUsageError(err error) bool {
-	var usageErr *OstorUsageError
-	return errors.As(err, &usageErr)
 }

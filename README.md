@@ -1,10 +1,18 @@
 # acronis-s3-usage
 
-This project started as a playground to explore certain APIs provided by ACI (or VHI) to extract usage for the object storage provided. It now hosts a libraries to interact with ACI (specifically) and Ostor APIs (for Acronis and Virtuozzo Object Storage).
+This project started as a playground to explore certain APIs provided by ACI (or VHI) to extract usage for the object storage provided. It now hosts libraries to interact with ACI (specifically) and Ostor APIs (for Acronis and Virtuozzo Object Storage).
+
+> [!CAUTION]
+> The code is still pre `v1.0.0` so some BC breaks are expected. It is used in production already.
+> Please **review** the changes particularly from `v0.9.0` to `v0.10.0`.
+
+> [!IMPORTANT]
+> Please star the repository if you find it useful.
+> For custom feature development or support, please get in touch.
 
 ## library
 
-See the [`pkg`](./pkg/) directory for the Golang libraries (or SDKs, if you will) for `acronis` (ACI) and the the Acronis/Virtuozzo Ostor API.
+See the [`pkg`](./pkg/) directory for the Golang libraries (or SDKs, if you will) for `acronis` (ACI) and the Acronis/Virtuozzo Ostor API.
 
 ## toys
 
@@ -65,4 +73,4 @@ GLOBAL OPTIONS:
 
 ## contributions
 
-If you end up using this, feel free to let me know by adding yourself to the adopers. All contributions (documentation, bug fixes, feature suggestions) are welcome.
+If you end up using this, feel free to let me know by adding yourself to the adopters. All contributions (documentation, bug fixes, feature suggestions) are welcome.

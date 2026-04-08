@@ -1,27 +1,28 @@
 package ostor
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 )
 
-func (o *Ostor) GenerateCredentials(email string) (*OstorCreateUserResponse, *http.Response, error) {
+func (o *Ostor) GenerateCredentials(ctx context.Context, email string) (*OstorCreateUserResponse, *http.Response, error) {
 	var user *OstorCreateUserResponse
-	resp, err := o.post(qUsers, qUsers+"&emailAddress="+email+"&genKey", &user)
+	resp, err := o.post(ctx, qUsers, map[string]string{"emailAddress": email, "genKey": ""}, &user)
 	return user, resp, err
 }
 
-func (o *Ostor) RevokeKey(email, accessKeyID string) (*http.Response, error) {
-	return o.post(qUsers, qUsers+"&emailAddress="+email+"&revokeKey="+accessKeyID, nil)
+func (o *Ostor) RevokeKey(ctx context.Context, email, accessKeyID string) (*http.Response, error) {
+	return o.post(ctx, qUsers, map[string]string{"emailAddress": email, "revokeKey": accessKeyID}, nil)
 }
 
 // RotateKey attempts to rotate the accessKeyID for the given user (email).
 //
 // This feature is not a native feature in the APIs, so we build around it using
 // our own methods, by checking the user account and verifying what can happen.
-func (o *Ostor) RotateKey(email, accessKeyID string) (*AccessKeyPair, *http.Response, error) {
-	user, userResp, err := o.GetUser(email)
+func (o *Ostor) RotateKey(ctx context.Context, email, accessKeyID string) (*AccessKeyPair, *http.Response, error) {
+	user, userResp, err := o.GetUser(ctx, email)
 	if err != nil {
 		var apiErr *OstorAPIError
 		if errors.As(err, &apiErr) && apiErr.Res.StatusCode == http.StatusNotFound {
@@ -51,12 +52,12 @@ func (o *Ostor) RotateKey(email, accessKeyID string) (*AccessKeyPair, *http.Resp
 		return nil, nil, fmt.Errorf("user %q has no access key %q that could be rotated", email, accessKeyID)
 	}
 
-	revokeResp, err := o.RevokeKey(email, accessKeyID)
+	revokeResp, err := o.RevokeKey(ctx, email, accessKeyID)
 	if err != nil {
 		return nil, revokeResp, err
 	}
 
-	genUser, genResp, err := o.GenerateCredentials(email)
+	genUser, genResp, err := o.GenerateCredentials(ctx, email)
 	if err != nil {
 		return nil, genResp, fmt.Errorf("failed to generate new credentials for %q: %w", email, err)
 	}

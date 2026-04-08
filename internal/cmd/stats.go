@@ -24,7 +24,7 @@ type stat struct {
 // and look up individual entries when returned, so for n pages returned from `?ostor-usage`, it
 // will make n * number of items returned requests to `?ostor-usage&obj=FOO`
 func showStats(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+	client := getOstorFromContext(cCtx.Context)
 
 	// fmt.Printf("from: %s\n", cCtx.Timestamp("from").String())
 
@@ -44,7 +44,7 @@ func showStats(cCtx *cli.Context) error {
 		}
 
 		page++
-		items, _, err := client.List(after)
+		items, _, err := client.List(cCtx.Context, after)
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func showStats(cCtx *cli.Context) error {
 
 		for _, obj := range items.Items {
 			// fmt.Println(obj)
-			usage, _, err := client.ObjectUsage(obj)
+			usage, _, err := client.ObjectUsage(cCtx.Context, obj)
 			if err != nil {
 				return fmt.Errorf("failed to get usage for %q: %w", obj, err)
 			}

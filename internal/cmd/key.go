@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/urfave/cli/v2"
 )
 
 func revokeKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+	client := getOstorFromContext(cCtx.Context)
 
 	email := cCtx.String("email")
 	keyID := cCtx.String("key-id")
 
-	_, err := client.RevokeKey(email, keyID)
+	_, err := client.RevokeKey(cCtx.Context, email, keyID)
 	if err != nil {
 		return err
 	}
@@ -24,11 +23,11 @@ func revokeKey(cCtx *cli.Context) error {
 }
 
 func createKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+	client := getOstorFromContext(cCtx.Context)
 
 	email := cCtx.String("email")
 
-	_, _, err := client.GenerateCredentials(email)
+	_, _, err := client.GenerateCredentials(cCtx.Context, email)
 	if err != nil {
 		return err
 	}
@@ -38,12 +37,12 @@ func createKey(cCtx *cli.Context) error {
 }
 
 func rotateKey(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+	client := getOstorFromContext(cCtx.Context)
 
 	email := cCtx.String("email")
 	keyID := cCtx.String("key-id")
 
-	keyPair, _, err := client.RotateKey(email, keyID)
+	keyPair, _, err := client.RotateKey(cCtx.Context, email, keyID)
 	if err != nil {
 		return err
 	}

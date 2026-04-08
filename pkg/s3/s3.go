@@ -24,13 +24,13 @@ type S3 struct {
 }
 
 // NewS3 creates an S3 handler which is specific to the provided email.
-func NewS3(endpointURL, email string, ostorClient *ostor.Ostor) (*S3, error) {
+func NewS3(ctx context.Context, endpointURL, email string, ostorClient *ostor.Ostor) (*S3, error) {
 	endpoint, err := url.Parse(endpointURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s: %s", endpoint, err)
 	}
 
-	user, _, err := ostorClient.GetUser(email)
+	user, _, err := ostorClient.GetUser(ctx, email)
 	if err != nil {
 		return nil, err
 	}

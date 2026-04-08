@@ -47,13 +47,13 @@ func main() {
 				cCtx.String("dc-url"),
 			)
 
-			tenantId, err := aci.GetTenantID()
+			tenantId, err := aci.GetTenantID(cCtx.Context)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("Got tenant id: %s\n\n", tenantId)
 
-			usageData, err := aci.GetUsage(tenantId)
+			usageData, err := aci.GetUsage(cCtx.Context, tenantId)
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func main() {
 						continue
 					}
 
-					app, err := aci.GetApplication(usages.ApplicationID)
+					app, err := aci.GetApplication(cCtx.Context, usages.ApplicationID)
 					if err != nil {
 						panic(err)
 					}
