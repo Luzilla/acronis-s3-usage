@@ -5,21 +5,21 @@ import (
 	"fmt"
 
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func Before(cCtx *cli.Context) error {
+func Before(ctx context.Context, c *cli.Command) (context.Context, error) {
 	client, err := ostor.New(
-		cCtx.String("s3-endpoint"),
-		cCtx.String("s3-system-key-id"),
-		cCtx.String("s3-system-secret"))
+		c.String("s3-endpoint"),
+		c.String("s3-system-key-id"),
+		c.String("s3-system-secret"))
 	if err != nil {
 		if ostor.IsConfigError(err) {
-			return fmt.Errorf("please check your configuration (--s3-endpoint, --s3-system-key-id, --s3-system-secret): %w", err)
+			return ctx, fmt.Errorf("please check your configuration (--s3-endpoint, --s3-system-key-id, --s3-system-secret): %w", err)
 		}
-		return err
+		return ctx, err
 	}
 
-	cCtx.Context = context.WithValue(cCtx.Context, ostorClient, client)
-	return nil
+	ctx = context.WithValue(ctx, ostorClient, client)
+	return ctx, nil
 }

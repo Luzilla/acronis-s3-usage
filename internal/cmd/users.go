@@ -11,19 +11,19 @@ import (
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/rodaine/table"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func users(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func users(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	users, _, err := client.ListUsers(cCtx.Context, cCtx.Bool("usage"))
+	users, _, err := client.ListUsers(ctx, c.Bool("usage"))
 	if err != nil {
 		return err
 	}
 
 	var tbl table.Table
-	if cCtx.Bool("usage") {
+	if c.Bool("usage") {
 		tbl = table.New("Email", "ID", "State", "Space")
 	} else {
 		tbl = table.New("Email", "ID", "State")
@@ -32,7 +32,7 @@ func users(cCtx *cli.Context) error {
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
 	for _, u := range users.Users {
-		if cCtx.Bool("usage") {
+		if c.Bool("usage") {
 			tbl.AddRow(u.Email, u.ID, u.State, utils.PrettyByteSize(u.Space.Current))
 		} else {
 			tbl.AddRow(u.Email, u.ID, u.State)
@@ -43,10 +43,10 @@ func users(cCtx *cli.Context) error {
 	return nil
 }
 
-func createUser(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func createUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	user, _, err := client.CreateUser(cCtx.Context, cCtx.String("email"))
+	user, _, err := client.CreateUser(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
@@ -62,10 +62,10 @@ func createUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func deleteUser(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func deleteUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	_, err := client.DeleteUser(cCtx.Context, cCtx.String("email"))
+	_, err := client.DeleteUser(ctx, c.String("email"))
 	if err != nil {
 		var transportErr *ostor.OstorTransportError
 		if errors.As(err, &transportErr) {
@@ -78,10 +78,10 @@ func deleteUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func lockUser(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func lockUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	err := lockUnLockUser(cCtx.Context, client, cCtx.String("email"), true)
+	err := lockUnLockUser(ctx, client, c.String("email"), true)
 	if err != nil {
 		return err
 	}
@@ -90,10 +90,10 @@ func lockUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func unlockUser(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func unlockUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	err := lockUnLockUser(cCtx.Context, client, cCtx.String("email"), false)
+	err := lockUnLockUser(ctx, client, c.String("email"), false)
 	if err != nil {
 		return err
 	}
@@ -112,14 +112,14 @@ func lockUnLockUser(ctx context.Context, client *ostor.Ostor, email string, lock
 	return nil
 }
 
-func showUser(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func showUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	user, _, err := client.GetUser(cCtx.Context, cCtx.String("email"))
+	user, _, err := client.GetUser(ctx, c.String("email"))
 	if err != nil {
 		var apiErr *ostor.OstorAPIError
 		if errors.As(err, &apiErr) && apiErr.Res.StatusCode == http.StatusNotFound {
-			return fmt.Errorf("no user with email %q found", cCtx.String("email"))
+			return fmt.Errorf("no user with email %q found", c.String("email"))
 		}
 		return err
 	}
@@ -144,7 +144,7 @@ func showUser(cCtx *cli.Context) error {
 		errorNoticeFmt("User does not have any keys.")
 	}
 
-	buckets, _, err := client.GetBuckets(cCtx.Context, cCtx.String("email"))
+	buckets, _, err := client.GetBuckets(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
@@ -164,10 +164,10 @@ func showUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func userLimits(cCtx *cli.Context) error {
-	client := getOstorFromContext(cCtx.Context)
+func userLimits(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	limits, _, err := client.GetUserLimits(cCtx.Context, cCtx.String("email"))
+	limits, _, err := client.GetUserLimits(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
