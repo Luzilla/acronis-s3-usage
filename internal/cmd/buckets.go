@@ -5,24 +5,22 @@ import (
 	"fmt"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
-	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/Luzilla/acronis-s3-usage/pkg/s3"
 	"github.com/rodaine/table"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 // this executes the action on 'behalf' of the user by returning the account
 // and using the first credential pair to run the delete operations
-func deleteBucket(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func deleteBucket(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	s3, err := s3.NewS3(cCtx.String("s3-endpoint"), cCtx.String("email"), client)
+	s3, err := s3.NewS3(ctx, c.String("s3-endpoint"), c.String("email"), client)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	bucketName := cCtx.String("bucket")
+	bucketName := c.String("bucket")
 
 	if _, err := s3.IsDeletable(ctx, bucketName); err != nil {
 		return err
@@ -38,10 +36,10 @@ func deleteBucket(cCtx *cli.Context) error {
 	return nil
 }
 
-func listBuckets(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func listBuckets(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	buckets, _, err := client.GetBuckets(cCtx.String("email"))
+	buckets, _, err := client.GetBuckets(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
@@ -62,12 +60,12 @@ func listBuckets(cCtx *cli.Context) error {
 	return nil
 }
 
-func showBucket(cCtx *cli.Context) error {
-	listBuckets(cCtx) // display the filter view first
+func showBucket(ctx context.Context, c *cli.Command) error {
+	listBuckets(ctx, c) // display the filter view first
 
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+	client := getOstorFromContext(ctx)
 
-	s3, err := s3.NewS3(cCtx.String("s3-endpoint"), cCtx.String("email"), client)
+	s3, err := s3.NewS3(ctx, c.String("s3-endpoint"), c.String("email"), client)
 	if err != nil {
 		return err
 	}
@@ -77,7 +75,7 @@ func showBucket(cCtx *cli.Context) error {
 	tbl := table.New("File", "Size")
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
-	for o := range s3.ListContents(context.Background(), cCtx.String("bucket")) {
+	for o := range s3.ListContents(ctx, c.String("bucket")) {
 		tbl.AddRow(o.Key, utils.PrettyByteSize(o.Size), o.Owner.ID)
 	}
 

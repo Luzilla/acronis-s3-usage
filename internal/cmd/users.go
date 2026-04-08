@@ -1,24 +1,29 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/rodaine/table"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func users(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func users(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	users, _, err := client.ListUsers(cCtx.Bool("usage"))
+	users, _, err := client.ListUsers(ctx, c.Bool("usage"))
 	if err != nil {
 		return err
 	}
 
 	var tbl table.Table
-	if cCtx.Bool("usage") {
+	if c.Bool("usage") {
 		tbl = table.New("Email", "ID", "State", "Space")
 	} else {
 		tbl = table.New("Email", "ID", "State")
@@ -27,7 +32,7 @@ func users(cCtx *cli.Context) error {
 	tbl.WithHeaderFormatter(headerFmt()).WithFirstColumnFormatter(columnFmt())
 
 	for _, u := range users.Users {
-		if cCtx.Bool("usage") {
+		if c.Bool("usage") {
 			tbl.AddRow(u.Email, u.ID, u.State, utils.PrettyByteSize(u.Space.Current))
 		} else {
 			tbl.AddRow(u.Email, u.ID, u.State)
@@ -38,10 +43,10 @@ func users(cCtx *cli.Context) error {
 	return nil
 }
 
-func createUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func createUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	user, _, err := client.CreateUser(cCtx.String("email"))
+	user, _, err := client.CreateUser(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
@@ -57,13 +62,15 @@ func createUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func deleteUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func deleteUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	resp, err := client.DeleteUser(cCtx.String("email"))
+	_, err := client.DeleteUser(ctx, c.String("email"))
 	if err != nil {
-		fmt.Println(resp.Request.URL)
-
+		var transportErr *ostor.OstorTransportError
+		if errors.As(err, &transportErr) {
+			slog.Error("request failed", "err", transportErr)
+		}
 		return err
 	}
 
@@ -71,10 +78,10 @@ func deleteUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func lockUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func lockUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	err := lockUnLockUser(client, cCtx.String("email"), true)
+	err := lockUnLockUser(ctx, client, c.String("email"), true)
 	if err != nil {
 		return err
 	}
@@ -83,10 +90,10 @@ func lockUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func unlockUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func unlockUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	err := lockUnLockUser(client, cCtx.String("email"), false)
+	err := lockUnLockUser(ctx, client, c.String("email"), false)
 	if err != nil {
 		return err
 	}
@@ -95,19 +102,24 @@ func unlockUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func lockUnLockUser(client *ostor.Ostor, email string, lock bool) error {
-	resp, err := client.LockUnlockUser(email, lock)
-	fmt.Println(string(resp.Body()))
-	return err
+func lockUnLockUser(ctx context.Context, client *ostor.Ostor, email string, lock bool) error {
+	resp, err := client.LockUnlockUser(ctx, email, lock)
+	if err != nil {
+		return err
+	}
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+	return nil
 }
 
-func showUser(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func showUser(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	user, resp, err := client.GetUser(cCtx.String("email"))
+	user, _, err := client.GetUser(ctx, c.String("email"))
 	if err != nil {
-		if resp.StatusCode() == 404 {
-			return fmt.Errorf("no user with email %q found", cCtx.String("email"))
+		var apiErr *ostor.OstorAPIError
+		if errors.As(err, &apiErr) && apiErr.Res.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("no user with email %q found", c.String("email"))
 		}
 		return err
 	}
@@ -132,7 +144,7 @@ func showUser(cCtx *cli.Context) error {
 		errorNoticeFmt("User does not have any keys.")
 	}
 
-	buckets, _, err := client.GetBuckets(cCtx.String("email"))
+	buckets, _, err := client.GetBuckets(ctx, c.String("email"))
 	if err != nil {
 		return err
 	}
@@ -152,12 +164,12 @@ func showUser(cCtx *cli.Context) error {
 	return nil
 }
 
-func userLimits(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func userLimits(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	limits, _, err := client.GetUserLimits(cCtx.String("email"))
+	limits, _, err := client.GetUserLimits(ctx, c.String("email"))
 	if err != nil {
-		return nil
+		return err
 	}
 
 	tbl := table.New("Limit", "Value")

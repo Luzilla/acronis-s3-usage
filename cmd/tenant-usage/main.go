@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math"
@@ -8,7 +9,7 @@ import (
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/acronis"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -18,42 +19,42 @@ var (
 )
 
 func main() {
-	app := &cli.App{
-		Name:     "tenant-usgae",
-		HelpName: "a program to interact with the ACI APIs to extract s3 basic usage",
-		Version:  fmt.Sprintf("%s (%s, date: %s)", version, commit, date),
+	app := &cli.Command{
+		Name:    "tenant-usgae",
+		Usage:   "a program to interact with the ACI APIs to extract s3 basic usage",
+		Version: fmt.Sprintf("%s (%s, date: %s)", version, commit, date),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "client-id",
 				Required: true,
-				EnvVars:  []string{"ACI_CLIENT_ID"},
+				Sources:  cli.EnvVars("ACI_CLIENT_ID"),
 			},
 			&cli.StringFlag{
 				Name:     "secret",
 				Required: true,
-				EnvVars:  []string{"ACI_SECRET"},
+				Sources:  cli.EnvVars("ACI_SECRET"),
 			},
 			&cli.StringFlag{
 				Name:     "dc-url",
 				Required: true,
-				EnvVars:  []string{"ACI_DC_URL"},
+				Sources:  cli.EnvVars("ACI_DC_URL"),
 				Value:    "https://eu2-cloud.acronis.com",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, c *cli.Command) error {
 			aci := acronis.NewClient(
-				cCtx.String("client-id"),
-				cCtx.String("secret"),
-				cCtx.String("dc-url"),
+				c.String("client-id"),
+				c.String("secret"),
+				c.String("dc-url"),
 			)
 
-			tenantId, err := aci.GetTenantID()
+			tenantId, err := aci.GetTenantID(ctx)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("Got tenant id: %s\n\n", tenantId)
 
-			usageData, err := aci.GetUsage(tenantId)
+			usageData, err := aci.GetUsage(ctx, tenantId)
 			if err != nil {
 				return err
 			}
@@ -64,7 +65,7 @@ func main() {
 						continue
 					}
 
-					app, err := aci.GetApplication(usages.ApplicationID)
+					app, err := aci.GetApplication(ctx, usages.ApplicationID)
 					if err != nil {
 						panic(err)
 					}
@@ -82,7 +83,7 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

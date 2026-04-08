@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/urfave/cli/v2"
+import "github.com/urfave/cli/v3"
 
 func BucketCommand() *cli.Command {
 	return &cli.Command{
@@ -11,7 +11,7 @@ func BucketCommand() *cli.Command {
 		Flags: []cli.Flag{
 			emailFlag(),
 		},
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			{
 				Name:    "delete",
 				Aliases: []string{"d"},
@@ -71,7 +71,7 @@ func UsersCommand() *cli.Command {
 				Value: false,
 			},
 		},
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			{
 				Name: "create",
 				Flags: []cli.Flag{

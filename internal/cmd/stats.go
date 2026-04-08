@@ -1,15 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/Luzilla/acronis-s3-usage/internal/utils"
 	"github.com/Luzilla/acronis-s3-usage/pkg/ostor"
 	"github.com/rodaine/table"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type stat struct {
@@ -24,10 +24,10 @@ type stat struct {
 // show stats is really expensive, it will (attempt to) crawl the entire `?ostor-usage` endpoint
 // and look up individual entries when returned, so for n pages returned from `?ostor-usage`, it
 // will make n * number of items returned requests to `?ostor-usage&obj=FOO`
-func showStats(cCtx *cli.Context) error {
-	client := cCtx.Context.Value(ostorClient).(*ostor.Ostor)
+func showStats(ctx context.Context, c *cli.Command) error {
+	client := getOstorFromContext(ctx)
 
-	// fmt.Printf("from: %s\n", cCtx.Timestamp("from").String())
+	// fmt.Printf("from: %s\n", c.Timestamp("from").String())
 
 	keep := map[string]stat{}
 	var after *string
@@ -45,7 +45,7 @@ func showStats(cCtx *cli.Context) error {
 		}
 
 		page++
-		items, _, err := client.List(after)
+		items, _, err := client.List(ctx, after)
 		if err != nil {
 			return err
 		}
@@ -58,10 +58,9 @@ func showStats(cCtx *cli.Context) error {
 
 		for _, obj := range items.Items {
 			// fmt.Println(obj)
-			usage, _, err := client.ObjectUsage(obj)
+			usage, _, err := client.ObjectUsage(ctx, obj)
 			if err != nil {
-				fmt.Println("usage: " + err.Error())
-				os.Exit(2)
+				return fmt.Errorf("failed to get usage for %q: %w", obj, err)
 			}
 
 			for _, item := range usage.Items {

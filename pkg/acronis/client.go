@@ -1,11 +1,16 @@
 package acronis
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
-	"github.com/go-resty/resty/v2"
+	"github.com/Luzilla/acronis-s3-usage/internal/client"
 )
 
 type AcronisClient struct {
@@ -19,67 +24,62 @@ type AcronisClient struct {
 	token tokenResponse
 
 	// http client
-	http *resty.Client
+	httpClient *client.Client
 }
 
 func NewClient(clientID string, secret string, dcURL string) *AcronisClient {
-	http := resty.New()
-	http.SetBaseURL(fmt.Sprintf("%s/api/2", dcURL))
-	http.SetHeader("Accept", "application/json")
+	httpClient := client.New(fmt.Sprintf("%s/api/2", dcURL), &http.Client{})
 
 	return &AcronisClient{
-		clientID: clientID,
-		secret:   secret,
-		dcURL:    dcURL,
-		http:     http,
+		clientID:   clientID,
+		secret:     secret,
+		dcURL:      dcURL,
+		httpClient: httpClient,
 	}
 }
 
-func (c *AcronisClient) GetApplication(appId string) (ApplicationResponse, error) {
+func (c *AcronisClient) GetApplication(ctx context.Context, appId string) (ApplicationResponse, error) {
 	var data ApplicationResponse
-	resp, err := c.http.R().
-		SetResult(&data).
-		Get(fmt.Sprintf("/applications/%s", appId))
-	if !resp.IsSuccess() {
-		return ApplicationResponse{}, err
+
+	req, err := c.authedRequest(ctx, http.MethodGet, fmt.Sprintf("/applications/%s", appId), nil)
+	if err != nil {
+		return data, err
+	}
+
+	if err := c.httpClient.DoInto(req, &data); err != nil {
+		return data, err
 	}
 
 	return data, nil
 }
 
 // fetch tenant id
-func (c *AcronisClient) GetTenantID() (string, error) {
-	c.fetchToken()
-
+func (c *AcronisClient) GetTenantID(ctx context.Context) (string, error) {
 	var data clientResponse
-	resp, err := c.http.R().
-		SetResult(&data).
-		Get(fmt.Sprintf("/clients/%s", os.Getenv("ACI_CLIENT_ID")))
+
+	req, err := c.authedRequest(ctx, http.MethodGet, fmt.Sprintf("/clients/%s", os.Getenv("ACI_CLIENT_ID")), nil)
 	if err != nil {
 		return "", err
 	}
-	if !resp.IsSuccess() {
-		return "", fmt.Errorf("unable to fetch tenant id: %s", resp.Body())
+
+	if err := c.httpClient.DoInto(req, &data); err != nil {
+		return "", err
 	}
 
 	return data.TenantID, nil
 }
 
 // fetch usage data
-func (c *AcronisClient) GetUsage(tenantId string) (UsageResponse, error) {
-	c.fetchToken()
-
+func (c *AcronisClient) GetUsage(ctx context.Context, tenantId string) (UsageResponse, error) {
 	var data UsageResponse
-	resp, err := c.http.R().
-		SetQueryParams(map[string]string{"tenants": tenantId}).
-		SetResult(&data).
-		Get("/tenants/usages")
 
+	req, err := c.authedRequest(ctx, http.MethodGet, "/tenants/usages?tenants="+tenantId, nil)
 	if err != nil {
-		return UsageResponse{}, err
+		return data, err
 	}
-	if !resp.IsSuccess() {
-		return UsageResponse{}, fmt.Errorf("unable to fetch usage data: %s", resp.Body())
+
+	if err := c.httpClient.DoInto(req, &data); err != nil {
+		return data, err
 	}
 
 	return data, nil
@@ -97,31 +97,55 @@ func (c *AcronisClient) buildBearer() string {
 	return fmt.Sprintf("Bearer %s", c.token.AccessToken)
 }
 
-func (c *AcronisClient) fetchToken() {
-	if c.token.AccessToken != "" {
-		return
+// authedRequest creates a request with a valid bearer token.
+func (c *AcronisClient) authedRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
+	if err := c.fetchToken(ctx); err != nil {
+		return nil, err
 	}
 
-	// fetch token
-	var tokenData tokenResponse
-	resp, err := c.http.R().
-		SetHeader("Authorization", fmt.Sprintf("Basic %s", c.encodeClientCredentials())).
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetFormData(map[string]string{"grant_type": "client_credentials"}).
-		SetResult(&tokenData).
-		Post("/idp/token")
+	req, err := c.request(ctx, method, path, body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	if !resp.IsSuccess() { // FIXME
-		fmt.Println("Unable to fetch token.")
-		fmt.Printf("%v", string(resp.Body()))
-		os.Exit(-1)
+	req.Header.Set("Authorization", c.buildBearer())
+
+	return req, nil
+}
+
+func (c *AcronisClient) fetchToken(ctx context.Context) error {
+	if c.token.AccessToken != "" {
+		return nil
+	}
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+
+	var tokenData tokenResponse
+
+	req, err := c.request(ctx, http.MethodPost, "/idp/token", strings.NewReader(form.Encode()))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", c.encodeClientCredentials()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	if err := c.httpClient.DoInto(req, &tokenData); err != nil {
+		return err
 	}
 
 	c.token = tokenData
 
 	fmt.Printf("Got a token: %s***\n", c.token.AccessToken[0:5])
-	c.http.SetHeader("Authorization", c.buildBearer())
+	return nil
+}
+
+func (c *AcronisClient) request(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
+	req, err := c.httpClient.NewRequest(ctx, method, path, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	return req, nil
 }
