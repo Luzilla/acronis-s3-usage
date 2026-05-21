@@ -35,7 +35,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/minio/minio-go/v7 v7.1.0
 	github.com/rodaine/table v1.3.1
-	github.com/urfave/cli/v3 v3.8.0
+	github.com/urfave/cli/v3 v3.9.0
 	go.uber.org/goleak v1.3.0
 	golang.org/x/net v0.48.0 // indirect
 )
