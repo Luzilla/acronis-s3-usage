@@ -33,7 +33,7 @@ require (
 require (
 	github.com/fatih/color v1.19.0
 	github.com/gorilla/mux v1.8.1
-	github.com/minio/minio-go/v7 v7.2.0
+	github.com/minio/minio-go/v7 v7.2.1
 	github.com/rodaine/table v1.3.1
 	github.com/urfave/cli/v3 v3.10.0
 	go.uber.org/goleak v1.3.0
