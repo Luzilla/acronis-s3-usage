@@ -30,7 +30,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/gorilla/mux v1.8.1
 	github.com/minio/minio-go/v7 v7.4.1
-	github.com/rodaine/table v1.4.0
+	github.com/rodaine/table v1.4.1
 	github.com/urfave/cli/v3 v3.14.0
 	go.uber.org/goleak v1.3.0
 	golang.org/x/net v0.60.0 // indirect
